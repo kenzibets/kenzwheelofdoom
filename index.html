@@ -69,14 +69,17 @@
   .subtitle{ font-size:13px; color:var(--muted); margin-top:2px; }
 
   .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; }
-  /* make wheel-frame responsive: use min() so it never exceeds available width and aspect-ratio to keep it square */
+  /* responsive square container for the wheel */
   .wheel-frame { width: min(580px, 92vw); aspect-ratio: 1 / 1; position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; max-width:100%; }
 
+  /* canvas forced to be square by JS; set to block to avoid inline baseline gaps */
   canvas#wheel {
-    width:100%; height:100%; border-radius:50%;
+    width:100%;
+    height:auto;
+    border-radius:50%;
+    display:block;
     box-shadow: 0 20px 60px rgba(2,8,23,0.6), inset 0 -10px 40px rgba(0,0,0,0.25);
     will-change: transform; transform-origin:50% 50%;
-    display:block;
   }
 
   /* pointer */
@@ -248,7 +251,6 @@
   /* responsive: wrap controls to rows on smaller widths */
   @media (max-width:1100px){
     .app{ grid-template-columns: 1fr; }
-    /* prefer percent-based width so it fits in narrow screens */
     .wheel-frame{ width: min(520px, 92vw); aspect-ratio:1/1; }
     .controls-right{ width:100%; max-height: calc(100vh - 120px); }
     .json-panel { right: 18px; left: auto; width: 84%; bottom: 108px; }
@@ -303,7 +305,7 @@
     </div>
 
     <div class="wheel-area">
-      <div class="wheel-frame">
+      <div class="wheel-frame" id="wheelFrame">
         <div class="pointer" aria-hidden="true">
           <div class="tri"></div>
           <div class="cap"></div>
@@ -424,6 +426,7 @@
 (() => {
   const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
+  const wheelFrame = document.getElementById('wheelFrame');
 
   const entriesList = document.getElementById('entriesList');
   const addBtn = document.getElementById('addBtn');
@@ -487,11 +490,18 @@
   let rotationDeg = 0;
   let isSpinning = false;
 
+  // Resize & scale: force the canvas to be a perfect square based on the smaller dimension of the wheelFrame
   function resizeAndScale(){
-    const rect = canvas.getBoundingClientRect();
+    const rect = wheelFrame.getBoundingClientRect();
+    // compute the largest square that fits inside the wheelFrame (use min of width/height)
+    const size = Math.max(1, Math.floor(Math.min(rect.width, rect.height)));
+    // set the canvas CSS size explicitly so it matches a square box
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+    // scale internal pixel resolution according to devicePixelRatio
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     resizeConfetti();
   }
@@ -506,6 +516,7 @@
     confettiCanvas.height = Math.round(rect.height * dpr);
     confettiCtx.setTransform(dpr,0,0,dpr,0,0);
   }
+  // initial sizing
   resizeAndScale();
 
   function showToast(text, type='info', timeout=3000){
@@ -630,7 +641,9 @@
   }
 
   function draw(highlightIndex = null){
+    // ensure canvas is sized correctly before drawing
     resizeAndScale();
+
     const W = canvas.width / (window.devicePixelRatio || 1);
     const H = canvas.height / (window.devicePixelRatio || 1);
     const cx = W/2, cy = H/2, radius = Math.min(W,H)/2 - 6;
@@ -1221,6 +1234,7 @@
     try{ history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]'); } catch(e){ history = []; }
     loadLast();
     renderEntries(); renderHistory(); draw();
+    // ensure initial rotation visual matches variable
     canvas.style.transform = `rotate(${rotationDeg}deg)`;
     resizeConfetti();
     refreshSavedSelect();
