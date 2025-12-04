@@ -137,6 +137,8 @@ body {
   border-radius: 50%;
   padding: 10px;
   max-width: 100%;
+  /* KEY FIX: clip the rotating canvas to the circular frame */
+  overflow: hidden;
 }
 
 canvas#wheel {
@@ -145,7 +147,8 @@ canvas#wheel {
   border-radius: 50%;
   box-shadow: 0 20px 60px rgba(2,8,23,0.6), inset 0 -10px 40px rgba(0,0,0,0.25);
   will-change: transform;
-  transform-origin: 50% 50%;
+  transform-origin: 50% 50%; /* explicit */
+  transform-box: fill-box;   /* helps some browsers compute origin correctly */
   display: block;
 }
 
@@ -1102,6 +1105,8 @@ canvas#wheel {
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
+    // Ensure CSS transform origin matches the visual center
+    canvas.style.transformOrigin = '50% 50%';
     resizeConfetti();
   }
   window.addEventListener('resize', ()=>{ resizeAndScale(); draw(); });
@@ -1565,6 +1570,7 @@ canvas#wheel {
     const jitter = (Math.random() - 0.5) * 6;
     const finalRotation = rotationDeg + (extraRot * 360) + delta + jitter;
 
+    // apply transition to canvas (canvas is clipped by .wheel-frame so it looks circular)
     canvas.style.transition = `transform ${duration}s ${easing}`;
     requestAnimationFrame(()=> { canvas.style.transform = `rotate(${finalRotation}deg)`; });
 
