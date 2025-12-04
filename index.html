@@ -41,13 +41,18 @@
       linear-gradient(180deg,#061322,var(--bg));
     color:#e6eef8;
     display:flex;align-items:flex-start;justify-content:center;padding:28px;
+    /* prevent tiny horizontal scrolling that can make the wheel appear off-center */
+    overflow-x: hidden;
   }
 
   /* Layout */
+  /* changed: make the app container responsive & centered (avoid forced 1200px width) */
   .app {
-    width:1200px; max-width:calc(100% - 48px);
+    width:100%;
+    max-width:1200px;
     display:grid; grid-template-columns: 1fr 520px; gap:18px;
     align-items:start;
+    margin: 0 auto;
   }
 
   /* Left wheel */
@@ -55,6 +60,7 @@
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border-radius:var(--radius); padding:18px; box-shadow: 0 12px 40px rgba(2,8,23,0.6);
     display:flex; flex-direction:column; min-height:560px;
+    min-width: 0; /* allow children to shrink properly inside grid */
   }
 
   .header { display:flex;align-items:center;justify-content:space-between; gap:12px; margin-bottom:12px; }
@@ -68,16 +74,14 @@
   .title{ font-weight:800; font-size:18px; }
   .subtitle{ font-size:13px; color:var(--muted); margin-top:2px; }
 
-  .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; }
-  /* responsive square container for the wheel */
-  .wheel-frame { width: min(580px, 92vw); aspect-ratio: 1 / 1; position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; max-width:100%; }
+  .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; min-width:0; }
+  /* changed: responsive wheel-frame sizing so it fits & centers on mobile */
+  .wheel-frame { width: min(92vw, 580px); height: min(92vw, 580px); position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; margin: 0 auto; }
 
-  /* canvas forced to be square by JS; set to block to avoid inline baseline gaps */
   canvas#wheel {
-    width:100%;
-    height:auto;
+    display:block; /* avoid inline-block whitespace issues */
+    width:100%; height:auto; aspect-ratio: 1 / 1;
     border-radius:50%;
-    display:block;
     box-shadow: 0 20px 60px rgba(2,8,23,0.6), inset 0 -10px 40px rgba(0,0,0,0.25);
     will-change: transform; transform-origin:50% 50%;
   }
@@ -97,6 +101,7 @@
     display:flex; flex-direction:column; gap:12px;
     width:520px;
     max-height: calc(100vh - 56px);
+    min-width:0;
   }
 
   .side {
@@ -107,6 +112,7 @@
     /* extra bottom padding so the absolutely positioned controls don't cover content */
     padding-bottom: 240px;
     position:relative; /* for absolute panels inside */
+    min-width:0;
   }
   .side h3{ margin:0; font-size:16px; font-weight:800; }
 
@@ -116,6 +122,7 @@
     padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
     overflow:auto;
     max-height: none;
+    min-width:0;
   }
   .entries::-webkit-scrollbar { width:12px; }
   .entries::-webkit-scrollbar-track { background: transparent; margin:6px 0; border-radius:10px; }
@@ -251,7 +258,8 @@
   /* responsive: wrap controls to rows on smaller widths */
   @media (max-width:1100px){
     .app{ grid-template-columns: 1fr; }
-    .wheel-frame{ width: min(520px, 92vw); aspect-ratio:1/1; }
+    /* changed: wheel-frame adapts with min(92vw, 580px) above; still ensure it doesn't exceed viewport */
+    .wheel-frame{ width: min(92vw,520px); height: min(92vw,520px); }
     .controls-right{ width:100%; max-height: calc(100vh - 120px); }
     .json-panel { right: 18px; left: auto; width: 84%; bottom: 108px; }
     .save-bar-left { width: 100%; }
@@ -259,28 +267,13 @@
     .controls-bottom { gap:10px; }
   }
   @media (max-width:640px){
-    /* on narrow mobile screens center vertically and reduce paddings */
-    body{ align-items:center; padding:14px; }
-    .app{ max-width: calc(100% - 28px); gap:12px; }
-    .wheel-frame{ width: min(360px, 94vw); aspect-ratio: 1/1; padding:8px; }
+    /* smaller wheel on very small screens */
+    .wheel-frame{ width: min(86vw,360px); height: min(86vw,360px); }
+    body { padding: 14px; } /* reduce page padding so there's more room for the wheel */
     .json-panel { width: 92%; left: 4%; right: 4%; bottom: 110px; }
     .json-grid { grid-template-columns: 1fr; }
     .set-name { max-width:100%; flex: 1 1 auto; }
     .saved-select { max-width:100%; flex: 1 1 auto; }
-    .controls-right { width:100%; max-height: none; }
-    .panel { padding:12px; min-height: auto; }
-    .wheel-area { min-height: auto; padding:6px; gap:10px; }
-    /* scale center button so it never overflows small wheels */
-    .center-btn { width: clamp(96px, 24%, 140px); height: clamp(96px, 24%, 140px); }
-    .center-btn .big{ font-size: clamp(16px, 3.5vw, 20px); }
-    .center-btn .small{ font-size: clamp(10px, 2.6vw, 12px); }
-  }
-
-  /* a little extra safety for ultra-small widths */
-  @media (max-width:380px) {
-    .wheel-frame { width: min(320px, 94vw); }
-    .center-btn { width: clamp(84px, 28%, 120px); height: clamp(84px, 28%, 120px); }
-    .pointer .tri { border-left:14px solid transparent;border-right:14px solid transparent;border-top:20px solid var(--accent1); }
   }
 </style>
 </head>
@@ -305,7 +298,7 @@
     </div>
 
     <div class="wheel-area">
-      <div class="wheel-frame" id="wheelFrame">
+      <div class="wheel-frame">
         <div class="pointer" aria-hidden="true">
           <div class="tri"></div>
           <div class="cap"></div>
@@ -322,7 +315,7 @@
       </div>
     </div>
 
-    <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px">
       <div class="row small">
         <label>Extra rotations</label>
         <input id="rotations" type="number" value="6" min="0" step="1" style="width:80px;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit;margin-left:8px">
@@ -426,7 +419,6 @@
 (() => {
   const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
-  const wheelFrame = document.getElementById('wheelFrame');
 
   const entriesList = document.getElementById('entriesList');
   const addBtn = document.getElementById('addBtn');
@@ -490,24 +482,19 @@
   let rotationDeg = 0;
   let isSpinning = false;
 
-  // Resize & scale: force the canvas to be a perfect square based on the smaller dimension of the wheelFrame
   function resizeAndScale(){
-    const rect = wheelFrame.getBoundingClientRect();
-    // compute the largest square that fits inside the wheelFrame (use min of width/height)
-    const size = Math.max(1, Math.floor(Math.min(rect.width, rect.height)));
-    // set the canvas CSS size explicitly so it matches a square box
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
-    // scale internal pixel resolution according to devicePixelRatio
+    // scale canvas to match CSS size with devicePixelRatio
+    const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(size * dpr);
-    canvas.height = Math.round(size * dpr);
+    // ensure rect.width is never 0
+    const w = Math.max(2, Math.round(rect.width * dpr));
+    const h = Math.max(2, Math.round(rect.height * dpr));
+    canvas.width = w;
+    canvas.height = h;
     ctx.setTransform(dpr,0,0,dpr,0,0);
     resizeConfetti();
   }
   window.addEventListener('resize', ()=>{ resizeAndScale(); draw(); });
-  // orientation change often needs explicit handling on some mobile browsers
-  window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ resizeAndScale(); draw(); }, 120); });
 
   function resizeConfetti(){
     const rect = document.body.getBoundingClientRect();
@@ -516,7 +503,6 @@
     confettiCanvas.height = Math.round(rect.height * dpr);
     confettiCtx.setTransform(dpr,0,0,dpr,0,0);
   }
-  // initial sizing
   resizeAndScale();
 
   function showToast(text, type='info', timeout=3000){
@@ -641,9 +627,7 @@
   }
 
   function draw(highlightIndex = null){
-    // ensure canvas is sized correctly before drawing
     resizeAndScale();
-
     const W = canvas.width / (window.devicePixelRatio || 1);
     const H = canvas.height / (window.devicePixelRatio || 1);
     const cx = W/2, cy = H/2, radius = Math.min(W,H)/2 - 6;
@@ -1234,7 +1218,6 @@
     try{ history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]'); } catch(e){ history = []; }
     loadLast();
     renderEntries(); renderHistory(); draw();
-    // ensure initial rotation visual matches variable
     canvas.style.transform = `rotate(${rotationDeg}deg)`;
     resizeConfetti();
     refreshSavedSelect();
