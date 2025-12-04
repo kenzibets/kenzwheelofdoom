@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-<!-- Provided font + Open Graph/Twitter meta -->
+<!-- Favicon / tab icon -->
+<link rel="icon" href="https://i.imgur.com/BpOOGQ8.png" type="image/png">
+  
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+
+<title>Wheel Of Doom</title>
 <meta property="og:title" content="@mackenzie_fordd" />
 <meta property="og:description" content="Kick streamer" />
 <meta property="og:type" content="website" />
@@ -19,9 +22,6 @@
 <meta name="twitter:title" content="@mackenzie_fordd" />
 <meta name="twitter:description" content="Kick streamer" />
 <meta name="twitter:image" content="https://i.imgur.com/BpOOGQ8.png" />
-
-<title>Clean Wheel Spinner — Win Animation</title>
-
 <style>
   :root{
     --bg:#071122;
@@ -32,8 +32,8 @@
     --glass: rgba(255,255,255,0.03);
     --radius:14px;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0}
+  * { box-sizing: border-box; }
+  html,body { height:100%; margin:0; }
   body{
     font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     background:
@@ -46,11 +46,11 @@
   /* Layout */
   .app {
     width:1200px; max-width:calc(100% - 48px);
-    display:grid; grid-template-columns: 1fr 420px; gap:18px;
-    align-items:start; max-height: calc(100vh - 56px);
+    display:grid; grid-template-columns: 1fr 520px; gap:18px;
+    align-items:start;
   }
 
-  /* Left panel (wheel) */
+  /* Left wheel */
   .panel {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border-radius:var(--radius); padding:18px; box-shadow: 0 12px 40px rgba(2,8,23,0.6);
@@ -69,7 +69,7 @@
   .subtitle{ font-size:13px; color:var(--muted); margin-top:2px; }
 
   .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; }
-  .wheel-frame { width:640px; height:640px; position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; }
+  .wheel-frame { width:580px; height:580px; position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; }
 
   canvas#wheel {
     width:100%; height:100%; border-radius:50%;
@@ -77,10 +77,10 @@
     will-change: transform; transform-origin:50% 50%;
   }
 
-  /* top pointer */
+  /* pointer */
   .pointer { position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:40; display:flex;flex-direction:column;align-items:center;gap:4px; }
   .pointer .tri { width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:26px solid var(--accent1); filter:drop-shadow(0 6px 18px rgba(108,92,231,0.18)); border-radius:4px; }
-  .pointer .cap { width:74px; height:16px; border-radius:8px; background:linear-gradient(90deg,var(--accent1),var(--accent2)); transform:translateX(-7px); }
+  .pointer .cap { display:none; }
 
   .center-btn { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:30; width:140px;height:140px;border-radius:50%; display:flex;align-items:center;justify-content:center; cursor:pointer; background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)); border:2px solid rgba(255,255,255,0.04); box-shadow:0 10px 30px rgba(2,8,23,0.45); transition:transform .12s ease; }
   .center-btn:active{ transform:translate(-50%,-50%) scale(.98); }
@@ -88,84 +88,192 @@
   .center-btn .small{ font-size:12px; opacity:0.85; margin-top:6px; font-weight:700; color:#e9f2ff; }
 
   /* Right column */
-  .controls-right { display:flex; flex-direction:column; gap:12px; height:100%; min-height:560px; }
+  .controls-right {
+    display:flex; flex-direction:column; gap:12px;
+    width:520px;
+    max-height: calc(100vh - 56px);
+  }
+
   .side {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.006));
     border-radius:var(--radius); padding:14px; box-shadow: 0 12px 30px rgba(2,6,23,0.6);
-    display:flex; flex-direction:column; gap:12px; height:100%; overflow:hidden;
+    display:flex; flex-direction:column; gap:12px;
+    overflow:auto;
+    /* extra bottom padding so the absolutely positioned controls don't cover content */
+    padding-bottom: 240px;
+    position:relative; /* for absolute panels inside */
   }
   .side h3{ margin:0; font-size:16px; font-weight:800; }
 
-  /* ENTRIES: restored scroll area with explicit max-height and custom scrollbar */
+  /* entries + scroll */
   .entries-wrap { display:flex; flex-direction:column; gap:8px; flex: 1 1 auto; min-height:0; }
   .entries {
     padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-    overflow:auto; max-height: 360px;
+    overflow:auto;
+    max-height: none;
   }
   .entries::-webkit-scrollbar { width:12px; }
   .entries::-webkit-scrollbar-track { background: transparent; margin:6px 0; border-radius:10px; }
   .entries::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border-radius:10px; border: 3px solid rgba(0,0,0,0.18); background-clip: padding-box; }
   .entries { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
 
-  .entry-row { display:grid; grid-template-columns: 1fr 72px 56px 36px; gap:8px; align-items:center; padding:8px; margin-bottom:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); }
-  .entry-row input[type="text"], .entry-row input[type="number"]{ background:transparent; border:0; color:inherit; outline:none; font-size:14px; }
-  .entry-row input[type="number"]{ text-align:center; }
+  .entry-row { display:grid; grid-template-columns: 1fr 72px 44px 56px 36px; gap:8px; align-items:center; padding:8px; margin-bottom:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); }
+  .entry-row textarea { background:transparent; border:0; color:inherit; outline:none; font-size:14px; resize:none; overflow:hidden; min-height:36px; line-height:18px; padding:4px 6px; border-radius:6px; }
+  .entry-row input[type="number"]{ background:transparent; border:0; color:inherit; outline:none; font-size:14px; text-align:center; }
   .entry-row .entry-color { width:36px;height:32px;border-radius:8px;border:0; cursor:pointer; }
+  .entry-row .gear { width:36px;height:36px;border-radius:8px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center }
+  .entry-row .remove { width:36px;height:36px;border-radius:8px;border:0;background:transparent;color:#ffccd5;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center }
 
-  .controls-bottom { display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:8px; }
+  /* Controls always visible (Save + JSON Options pinned) */
+  .controls-bottom {
+    display:flex; gap:8px; align-items:center; justify-content:flex-start;
+    margin-top:8px; flex-shrink:0;
+
+    /* pinned inside .side */
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    z-index: 5;
+    padding: 10px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.02));
+    align-items:center;
+
+    /* KEY: allow wrapping so controls never overlap */
+    flex-wrap: wrap;
+  }
+
+  /* Control groups: explicit sizing + wrapping behavior */
+  .save-bar-left { display:flex; gap:8px; align-items:center; flex: 1 1 auto; min-width:0; flex-wrap:wrap; }
+  .set-name { flex: 0 1 200px; min-width:120px; max-width:42%; }
+  .save-btn { flex: 0 0 auto; }
+  .saved-select { flex: 1 1 200px; min-width:120px; max-width:260px; color: #000; }
+  .saved-select option { color: #000; } /* attempt to ensure option text displays black where browsers support it */
+  .saved-actions { display:flex; gap:8px; flex: 0 0 auto; }
+
+  .save-bar-right { display:flex; gap:8px; align-items:center; margin-left:auto; flex: 0 0 auto; }
+
+  /* JSON panel: now fixed-positioned; background made opaque and not transparent; will be positioned by JS beneath the savedSets select */
+  .json-panel {
+    position: fixed;
+    z-index: 6;
+    display: none;
+    gap: 12px;
+    width: 360px;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 18px 60px rgba(2,6,23,0.45);
+    border: 1px solid rgba(255,255,255,0.03);
+    /* OPAQUE background (no transparency) */
+    background: linear-gradient(180deg, rgba(12,16,22,0.98), rgba(20,24,30,0.98));
+  }
+
+  .json-grid {
+    display:grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap:10px;
+    align-items:center;
+  }
+
+  .json-grid .btn { width:100%; justify-content:center; padding:10px 12px; }
+
   .row { display:flex; gap:8px; align-items:center; }
   .text-input { padding:10px; border-radius:10px; background:var(--glass); border:1px solid rgba(255,255,255,0.03); color:inherit; outline:none; }
-  .btn { padding:9px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:800; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; }
+  .btn { padding:9px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:800; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; white-space:nowrap; }
   .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); font-weight:700; }
 
   .small { font-size:13px; color:var(--muted); }
-
   .meta { font-size:12px; text-align:center; color:#9fb4d9; margin-top:8px; }
 
-  /* WIN POPUP styles */
-  .win-overlay {
-    position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999;
-    background: linear-gradient(180deg, rgba(2,6,23,0.45), rgba(2,6,23,0.55));
-    backdrop-filter: blur(6px);
+  /* popover */
+  .popover {
+    position: absolute;
+    min-width:260px;
+    max-width:420px;
+    background: linear-gradient(180deg, rgba(12,16,22,0.98), rgba(20,24,30,0.98));
+    border-radius:10px;
+    padding:12px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    z-index:1200;
+    color: #e6eef8;
+    transform-origin: top left;
+    border: 1px solid rgba(255,255,255,0.04);
   }
-  .win-card {
-    width: min(720px, 92%); max-width:720px; border-radius:18px; padding:24px; text-align:center;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
-    box-shadow: 0 30px 100px rgba(2,6,23,0.8), inset 0 1px 0 rgba(255,255,255,0.02);
-    transform-origin:center;
-    opacity:0; transform: translateY(18px) scale(.96);
-    transition:opacity .28s cubic-bezier(.2,.9,.1,1), transform .36s cubic-bezier(.2,.9,.1,1);
-    position:relative;
-    overflow:hidden;
-  }
-  .win-card.show { opacity:1; transform: translateY(0) scale(1); }
+  .popover .row { flex-direction:row; align-items:center; justify-content:space-between; }
+  .popover input[type="range"] { width:100%; }
+  .popover .label { font-size:13px; color:var(--muted); margin-bottom:6px; }
+  .popover .small { font-size:13px; color:var(--muted); }
+  .popover .estimate { font-size:13px; color:#bfe8ff; margin-top:6px; }
 
+  /* win overlay & confetti */
+  .win-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999; background: linear-gradient(180deg, rgba(2,6,23,0.45), rgba(2,6,23,0.55)); backdrop-filter: blur(6px); }
+  .win-card { width: min(720px, 92%); max-width:720px; border-radius:18px; padding:24px; text-align:center; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)); box-shadow: 0 30px 100px rgba(2,6,23,0.8), inset 0 1px 0 rgba(255,255,255,0.02); transform-origin:center; opacity:0; transform: translateY(18px) scale(.96); transition:opacity .28s cubic-bezier(.2,.9,.1,1), transform .36s cubic-bezier(.2,.9,.1,1); position:relative; overflow:hidden; }
+  .win-card.show { opacity:1; transform: translateY(0) scale(1); }
   .win-title { font-size:14px; color:var(--muted); margin-bottom:6px; }
   .win-winner { font-size:34px; font-weight:900; letter-spacing:0.6px; margin-bottom:6px; color:white; text-shadow: 0 6px 30px rgba(108,92,231,0.25); }
   .win-sub { font-size:14px; color:#cfe6ff; margin-bottom:14px; }
-
   .win-actions { display:flex; gap:12px; justify-content:center; margin-top:12px; }
   .win-actions .btn { padding:10px 16px; font-weight:800; border-radius:10px; }
   .win-close { position:absolute; top:12px; right:12px; background:transparent; border:0; color:var(--muted); font-size:20px; cursor:pointer; }
-
-  /* confetti canvas inside overlay */
   #confetti-canvas { position:absolute; inset:0; pointer-events:none; z-index:1000; }
 
-  @media (max-width:900px){
-    .win-winner { font-size:28px; }
+  /* toasts */
+  .toast-container {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    z-index:1600;
+    max-width: 360px;
+  }
+  .toast {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    color: #eaf6ff;
+    padding:10px 12px;
+    border-radius:10px;
+    box-shadow: 0 12px 36px rgba(2,6,23,0.6);
+    border:1px solid rgba(255,255,255,0.03);
+    font-weight:700;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .toast.success { border-left:4px solid #34d399; }
+  .toast.error { border-left:4px solid #fb7185; }
+  .toast.info { border-left:4px solid #60a5fa; }
+
+  /* responsive: wrap controls to rows on smaller widths */
+  @media (max-width:1100px){
+    .app{ grid-template-columns: 1fr; }
+    .wheel-frame{ width:520px;height:520px;}
+    .controls-right{ width:100%; max-height: calc(100vh - 120px); }
+    .json-panel { right: 18px; left: auto; width: 84%; bottom: 108px; }
+    .save-bar-left { width: 100%; }
+    .save-bar-right { width: 100%; margin-left: 0; justify-content: flex-end; }
+    .controls-bottom { gap:10px; }
+  }
+  @media (max-width:640px){
+    .wheel-frame{ width:360px;height:360px;}
+    .json-panel { width: 92%; left: 4%; right: 4%; bottom: 110px; }
+    .json-grid { grid-template-columns: 1fr; }
+    .set-name { max-width:100%; flex: 1 1 auto; }
+    .saved-select { max-width:100%; flex: 1 1 auto; }
   }
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- Left: wheel -->
+  <!-- Left -->
   <div class="panel">
     <div class="header">
       <div class="brand">
-        <div class="logo">W</div>
+        <div class="logo">
+          <img src="https://i.imgur.com/BpOOGQ8.png" alt="Logo" style="height:40px;">
+        </div>
         <div>
-          <div class="title">Clean Wheel — Spinner</div>
-          <div class="subtitle">Weighted wheel · Save sets · Smooth spins</div>
+          <div class="title">Wheel Of Doom</div>
+          <div class="subtitle">Per-option settings · Persisted locally</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -212,16 +320,14 @@
     </div>
   </div>
 
-  <!-- Right: controls -->
+  <!-- Right -->
   <div class="controls-right">
     <div class="side">
       <h3>Entries & settings</h3>
 
       <div class="entries-wrap">
-        <!-- ENTRIES (scrollable) -->
         <div class="entries" id="entriesList" aria-live="polite"></div>
 
-        <!-- add row -->
         <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
           <input id="newText" class="text-input" placeholder="Add entry (press Enter)" style="flex:1">
           <input id="newWeight" type="number" value="1" min="0.01" step="0.01" style="width:86px;padding:8px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit">
@@ -229,29 +335,38 @@
           <button id="addBtn" class="btn">Add</button>
         </div>
 
-        <!-- controls bottom -->
-        <div class="controls-bottom" style="margin-top:10px">
-          <div style="display:flex;gap:8px;align-items:center">
-            <input id="setName" class="text-input" placeholder="Set name (save as)" style="min-width:160px">
-            <button id="saveSet" class="btn">Save</button>
-          </div>
-
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="savedSets" class="text-input" style="min-width:160px"><option value="">Load saved set…</option></select>
-            <button id="loadSet" class="btn ghost">Load</button>
-            <button id="delSet" class="btn ghost">Del</button>
-          </div>
-
-          <div style="display:flex;gap:8px;align-items:center">
+        <!-- JSON panel (hidden until JSON Options is pressed) -->
+        <div id="jsonPanel" class="json-panel" aria-hidden="true">
+          <div class="json-grid">
             <button id="normalizeBtn" class="btn ghost">Normalize to 100%</button>
-            <button id="clearBtn" class="btn ghost">Clear</button>
+            <button id="clearBtn" class="btn ghost">Clear entries</button>
             <button id="exportBtn2" class="btn ghost">Download JSON</button>
             <button id="importBtn2" class="btn ghost">Import JSON</button>
           </div>
         </div>
+
+        <!-- Controls pinned to the bottom: Save + Saved sets + JSON Options -->
+        <div class="controls-bottom" role="region" aria-label="Primary save controls">
+          <div class="save-bar-left">
+            <input id="setName" class="text-input set-name" placeholder="Set name (save as)">
+            <button id="saveSet" class="btn save-btn">Save</button>
+
+            <!-- moved OUT of JSON panel -->
+            <select id="savedSets" class="text-input saved-select"><option value="">Load saved set…</option></select>
+
+            <div class="saved-actions">
+              <button id="loadSet" class="btn ghost">Load</button>
+              <button id="delSet" class="btn ghost">Del</button>
+            </div>
+          </div>
+
+          <div class="save-bar-right">
+            <button id="jsonOptionsBtn" class="btn ghost" aria-expanded="false" title="Show JSON / saved-set options">JSON Options ▾</button>
+          </div>
+        </div>
+
       </div>
 
-      <!-- History -->
       <div style="margin-top:8px">
         <div class="small" style="margin-bottom:6px">History</div>
         <div id="historyList" class="entries" style="max-height:120px;padding:8px"></div>
@@ -263,6 +378,9 @@
     <div class="meta">Saved locally in your browser (localStorage). No data leaves your machine.</div>
   </div>
 </div>
+
+<!-- popover container -->
+<div id="popoverRoot" style="position:fixed;left:0;top:0;pointer-events:none;z-index:1300"></div>
 
 <!-- WIN overlay + confetti canvas -->
 <div id="winOverlay" class="win-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="winTitle">
@@ -279,15 +397,11 @@
   </div>
 </div>
 
-<script>
-/* Spinner + Win popup + confetti
-   - Keeps cumulative rotationDeg so repeated spins stay fast
-   - On spin end, shows popup with winner, runs confetti for short burst
-   - Popup auto-hides after X seconds or can be dismissed manually
-*/
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
+<script>
 (() => {
-  // DOM refs
   const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
 
@@ -307,22 +421,25 @@
 
   const setName = document.getElementById('setName');
   const saveSet = document.getElementById('saveSet');
+
+  const jsonOptionsBtn = document.getElementById('jsonOptionsBtn');
+  const jsonPanel = document.getElementById('jsonPanel');
+
   const savedSets = document.getElementById('savedSets');
   const loadSet = document.getElementById('loadSet');
   const delSet = document.getElementById('delSet');
   const normalizeBtn = document.getElementById('normalizeBtn');
   const clearBtn = document.getElementById('clearBtn');
+  const exportBtn2 = document.getElementById('exportBtn2');
+  const importBtn2 = document.getElementById('importBtn2');
 
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
-  const exportBtn2 = document.getElementById('exportBtn2');
-  const importBtn2 = document.getElementById('importBtn2');
 
   const historyList = document.getElementById('historyList');
   const copyHistory = document.getElementById('copyHistory');
   const clearHistory = document.getElementById('clearHistory');
 
-  // win popup refs
   const winOverlay = document.getElementById('winOverlay');
   const winCard = document.getElementById('winCard');
   const winText = document.getElementById('winText');
@@ -334,34 +451,32 @@
   const confettiCanvas = document.getElementById('confetti-canvas');
   const confettiCtx = confettiCanvas.getContext('2d');
 
-  const STORAGE = { sets: 'wheel_sets_v4', last: 'wheel_last_v4', history: 'wheel_history_v4' };
+  const popoverRoot = document.getElementById('popoverRoot');
+  const toastContainer = document.getElementById('toastContainer');
 
-  // default demo entries
+  const STORAGE = { sets: 'wheel_sets_v6', last: 'wheel_last_v6', history: 'wheel_history_v6' };
+
   let entries = [
-    { text: '$20 on any slot', weight: 1, color: '#2563eb' },
-    { text: '$100 on', weight: 1, color: '#ef4444' }
+    { text: '$20 on any slot', weight: 1, color: '#2563eb', cfg: { locked:false, excluded:false } },
+    { text: '$100 on', weight: 1, color: '#ef4444', cfg: { locked:false, excluded:false } }
   ];
 
   let savedSetsObj = {};
   let history = [];
 
-  // cumulative rotation degrees (keep growing)
   let rotationDeg = 0;
   let isSpinning = false;
 
-  // sizing helpers
   function resizeAndScale(){
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    // confetti canvas match viewport size (overlay)
     resizeConfetti();
   }
   window.addEventListener('resize', ()=>{ resizeAndScale(); draw(); });
 
-  // confetti sizing
   function resizeConfetti(){
     const rect = document.body.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -369,15 +484,28 @@
     confettiCanvas.height = Math.round(rect.height * dpr);
     confettiCtx.setTransform(dpr,0,0,dpr,0,0);
   }
-
-  // initialize
   resizeAndScale();
 
-  // utils
-  function sumWeights(list){ return list.reduce((s,e)=>s + Math.max(0,Number(e.weight)||0), 0); }
+  function showToast(text, type='info', timeout=3000){
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = text;
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.background='transparent'; closeBtn.style.border='0'; closeBtn.style.color='inherit'; closeBtn.style.cursor='pointer'; closeBtn.style.fontWeight='800';
+    closeBtn.addEventListener('click', ()=> { t.remove(); });
+    t.appendChild(closeBtn);
+    toastContainer.prepend(t);
+    setTimeout(()=> { try{ t.remove(); }catch(e){} }, timeout);
+  }
+
+  function sumWeights(list){
+    return list.reduce((s,e)=> s + ((e.cfg && e.cfg.excluded) ? 0 : Math.max(0,Number(e.weight)||0)), 0);
+  }
   function pickColor(i, total){ const hue = Math.round(210 - (i/(Math.max(1,total)))*210); return `hsl(${hue} 88% 56%)`; }
   function shadeHex(color, pct){
-    if (color && color.startsWith && color.startsWith('#')) {
+    if (!color) return '#888';
+    if (color.startsWith('#')) {
       let c = color.slice(1);
       if (c.length === 3) c = c.split('').map(ch=>ch+ch).join('');
       const num = parseInt(c,16);
@@ -387,10 +515,98 @@
       r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
       return `rgb(${r},${g},${b})`;
     }
-    return color || '#888';
+    return color;
   }
 
-  // drawing the wheel
+  function truncatedToFit(text, maxWidth) {
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    const ell = '…';
+    let low = 0, high = text.length;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      const candidate = text.slice(0, mid) + ell;
+      if (ctx.measureText(candidate).width <= maxWidth) low = mid + 1; else high = mid;
+    }
+    return text.slice(0, Math.max(0, low-1)) + ell;
+  }
+
+  function drawLabelInSlice(text, midAngle, sliceAngle, cx, cy, radius) {
+    const labelRadius = radius * 0.62;
+    const paddingFactor = 0.86;
+    const arcLen = sliceAngle * labelRadius * paddingFactor;
+    const minArc = 18;
+    if (arcLen < minArc) {
+      ctx.save();
+      ctx.translate(cx + Math.cos(midAngle) * (labelRadius + 6), cy + Math.sin(midAngle) * (labelRadius + 6));
+      ctx.rotate(midAngle + Math.PI/2);
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = '600 10px Inter, system-ui, Arial';
+      const t = truncatedToFit(text, 48);
+      ctx.fillText(t, 0, 0);
+      ctx.restore();
+      return;
+    }
+
+    const maxWidth = arcLen;
+    const fontSizes = [18, 16, 14, 12, 11, 10, 9, 8];
+    const words = (''+text).split(' ');
+
+    for (let fs of fontSizes) {
+      ctx.font = `600 ${fs}px Inter, system-ui, Arial`;
+      const measure = ctx.measureText(text);
+      if (measure.width <= maxWidth) {
+        ctx.save();
+        ctx.translate(cx + Math.cos(midAngle) * labelRadius, cy + Math.sin(midAngle) * labelRadius);
+        ctx.rotate(midAngle + Math.PI/2);
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 0, 0);
+        ctx.restore();
+        return;
+      }
+
+      if (words.length > 1) {
+        let best = null;
+        for (let split=1; split<words.length; split++){
+          const line1 = words.slice(0,split).join(' ');
+          const line2 = words.slice(split).join(' ');
+          const w1 = ctx.measureText(line1).width;
+          const w2 = ctx.measureText(line2).width;
+          if (w1 <= maxWidth && w2 <= maxWidth) {
+            const diff = Math.abs(w1 - w2);
+            if (!best || diff < best.diff) best = { line1, line2, diff, maxW: Math.max(w1,w2) };
+          }
+        }
+        if (best) {
+          const lineHeight = fs + 2;
+          ctx.save();
+          ctx.translate(cx + Math.cos(midAngle) * labelRadius, cy + Math.sin(midAngle) * labelRadius);
+          ctx.rotate(midAngle + Math.PI/2);
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(best.line1, 0, -lineHeight/2);
+          ctx.fillText(best.line2, 0, lineHeight/2);
+          ctx.restore();
+          return;
+        }
+      }
+    }
+
+    const smallest = 8;
+    ctx.font = `600 ${smallest}px Inter, system-ui, Arial`;
+    const truncated = truncatedToFit(text, maxWidth);
+    ctx.save();
+    ctx.translate(cx + Math.cos(midAngle) * labelRadius, cy + Math.sin(midAngle) * labelRadius);
+    ctx.rotate(midAngle + Math.PI/2);
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(truncated, 0, 0);
+    ctx.restore();
+  }
+
   function draw(highlightIndex = null){
     resizeAndScale();
     const W = canvas.width / (window.devicePixelRatio || 1);
@@ -399,7 +615,6 @@
 
     ctx.clearRect(0,0,W,H);
 
-    // vignette
     const g = ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.4, radius*0.1, cx,cy, radius*1.2);
     g.addColorStop(0,'rgba(255,255,255,0.02)');
     g.addColorStop(1,'rgba(0,0,0,0.08)');
@@ -409,133 +624,286 @@
     let start = -Math.PI/2;
 
     entries.forEach((entry,i)=>{
-      const angle = (entry.weight/total) * Math.PI * 2;
+      const weight = (entry.cfg && entry.cfg.excluded) ? 0 : Math.max(0,Number(entry.weight)||0);
+      const angle = (weight/total) * Math.PI * 2;
       const end = start + angle;
 
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.arc(cx,cy,radius,start,end,false);
-      ctx.closePath();
-
-      const midAngle = (start + end) / 2;
-      const colorA = entry.color || pickColor(i, entries.length);
-      const grad = ctx.createLinearGradient(cx,cy, cx + Math.cos(midAngle)*radius, cy + Math.sin(midAngle)*radius);
-      grad.addColorStop(0, colorA);
-      grad.addColorStop(1, shadeHex(colorA, -14));
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
-
-      if (highlightIndex === i){
-        ctx.save();
+      if (angle > 0.00001) {
         ctx.beginPath();
         ctx.moveTo(cx,cy);
-        ctx.arc(cx,cy,radius+8,start,end,false);
+        ctx.arc(cx,cy,radius,start,end,false);
         ctx.closePath();
-        ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-        ctx.lineWidth = 6;
+
+        const midAngle = (start + end) / 2;
+        const colorA = entry.color || pickColor(i, entries.length);
+        const grad = ctx.createLinearGradient(cx,cy, cx + Math.cos(midAngle)*radius, cy + Math.sin(midAngle)*radius);
+        grad.addColorStop(0, colorA);
+        grad.addColorStop(1, shadeHex(colorA, -14));
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+        ctx.lineWidth = 1.8;
         ctx.stroke();
-        ctx.restore();
+
+        if (highlightIndex === i){
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(cx,cy);
+          ctx.arc(cx,cy,radius+8,start,end,false);
+          ctx.closePath();
+          ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+          ctx.lineWidth = 6;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        drawLabelInSlice(entry.text, midAngle, angle, cx, cy, radius);
       }
-
-      // text
-      ctx.save();
-      const labelRadius = radius * 0.62;
-      ctx.translate(cx + Math.cos(midAngle)*labelRadius, cy + Math.sin(midAngle)*labelRadius);
-      ctx.rotate(midAngle + Math.PI/2);
-      ctx.fillStyle = 'rgba(255,255,255,0.92)';
-      ctx.font = '600 18px Inter, system-ui, Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      wrapText(ctx, entry.text, 0, 0, radius * 0.56, 20);
-      ctx.restore();
-
       start = end;
     });
 
-    // center
     ctx.beginPath();
     ctx.arc(cx,cy, radius*0.18, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(255,255,255,0.035)';
     ctx.fill();
   }
 
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
-    const words = (''+text).split(' ');
-    let line = '', lines = [];
-    for (let n=0; n<words.length; n++){
-      const test = line + words[n] + ' ';
-      if (ctx.measureText(test).width > maxWidth && n>0){ lines.push(line.trim()); line = words[n] + ' '; } else { line = test; }
-    }
-    lines.push(line.trim());
-    const startY = y - (lines.length-1) * (lineHeight/2);
-    lines.forEach((ln,i)=> ctx.fillText(ln, x, startY + i*lineHeight));
-  }
-
-  // render entries list
   function renderEntries(){
     entriesList.innerHTML = '';
-    if (entries.length === 0) {
+    if (!entries.length) {
       entriesList.innerHTML = '<div style="padding:12px;color:var(--muted);">No entries yet — add some!</div>';
       return;
     }
+
     entries.forEach((e,i)=>{
       const el = document.createElement('div');
       el.className = 'entry-row';
       el.innerHTML = `
-        <input type="text" data-i="${i}" class="entry-text" value="${escapeHtml(e.text)}" />
+        <textarea data-i="${i}" class="entry-text" aria-label="Entry text">${escapeHtmlForTextArea(e.text)}</textarea>
         <input type="number" data-i="${i}" class="entry-weight" value="${Number(e.weight)}" step="0.01" />
+        <button class="gear" data-i="${i}" title="Configure ⚙">⚙</button>
         <input type="color" data-i="${i}" class="entry-color" value="${e.color || pickColor(i, entries.length)}" />
-        <button class="entry-remove" data-i="${i}" title="Remove">✕</button>
+        <button class="remove" data-i="${i}" title="${e.cfg && e.cfg.locked ? 'Locked' : 'Remove'}">${e.cfg && e.cfg.locked ? '🔒' : '✕'}</button>
       `;
       entriesList.appendChild(el);
     });
 
-    // attach listeners
-    entriesList.querySelectorAll('.entry-text').forEach(inp=>{
-      inp.addEventListener('change', ()=> { const i = +inp.dataset.i; entries[i].text = inp.value.trim() || '(empty)'; saveLast(); draw(); });
+    entriesList.querySelectorAll('.entry-text').forEach(t=>{
+      autoResizeTextarea(t);
+      t.addEventListener('input', ()=> { autoResizeTextarea(t); const i = +t.dataset.i; entries[i].text = t.value.trim() || '(empty)'; saveLast(); draw(); });
     });
+
     entriesList.querySelectorAll('.entry-weight').forEach(inp=>{
       inp.addEventListener('change', ()=> { const i = +inp.dataset.i; const v = parseFloat(inp.value); entries[i].weight = Math.max(0.0001, isFinite(v) ? v : 1); saveLast(); draw(); });
     });
+
     entriesList.querySelectorAll('.entry-color').forEach(inp=>{
       inp.addEventListener('change', ()=> { const i = +inp.dataset.i; entries[i].color = inp.value; saveLast(); draw(); });
     });
-    entriesList.querySelectorAll('.entry-remove').forEach(btn=>{
-      btn.addEventListener('click', ()=> { const i = +btn.dataset.i; entries.splice(i,1); saveLast(); renderEntries(); draw(); });
+
+    entriesList.querySelectorAll('.remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const i = +btn.dataset.i;
+        if (entries[i].cfg && entries[i].cfg.locked) { showToast('This entry is locked. Unlock in the config to remove.', 'error'); return; }
+        entries.splice(i,1);
+        saveLast(); renderEntries(); draw();
+      });
+    });
+
+    entriesList.querySelectorAll('.gear').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{
+        const i = +btn.dataset.i;
+        openPopoverForEntry(i, btn);
+      });
     });
   }
 
-  function escapeHtml(s){ return (''+s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escapeHtmlForTextArea(s){
+    return (s || '').replace(/\r/g,'');
+  }
 
-  // add entry
+  function autoResizeTextarea(textarea){
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight) + 'px';
+  }
+
+  let currentPopover = null;
+  function openPopoverForEntry(index, anchorEl){
+    closePopover();
+    const entry = entries[index];
+    const rect = anchorEl.getBoundingClientRect();
+    const pop = document.createElement('div');
+    pop.className = 'popover';
+    pop.style.pointerEvents = 'auto';
+    pop.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-weight:800">Configure option</div>
+        <div style="font-size:12px;color:var(--muted)">${index+1}</div>
+      </div>
+
+      <div class="label">Probability (%)</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+        <input id="popPct" type="number" min="0" max="100" step="0.1" style="width:90px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:inherit" />
+        <input id="popRange" type="range" min="0" max="100" step="0.1" />
+      </div>
+
+      <div class="estimate" id="popEstimate"></div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;margin-bottom:6px">
+        <label class="small"><input id="popLocked" type="checkbox" /> Lock</label>
+        <label class="small" style="margin-left:8px"><input id="popExcluded" type="checkbox" /> Exclude</label>
+      </div>
+
+      <label class="small" style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><input id="popAutoScale" type="checkbox" /> Auto-scale others (relative)</label>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+        <button id="popCancel" class="btn ghost">Cancel</button>
+        <button id="popSave" class="btn">Save</button>
+      </div>
+    `;
+
+    popoverRoot.appendChild(pop);
+    currentPopover = pop;
+
+    const pctInput = pop.querySelector('#popPct');
+    const rangeInput = pop.querySelector('#popRange');
+    const lockedInput = pop.querySelector('#popLocked');
+    const excludedInput = pop.querySelector('#popExcluded');
+    const autoScaleInput = pop.querySelector('#popAutoScale');
+    const estimateEl = pop.querySelector('#popEstimate');
+
+    const total = sumWeights(entries) || 1;
+    const effectiveWeight = (entry.cfg && entry.cfg.excluded) ? 0 : Math.max(0, Number(entry.weight)||0);
+    const pctVal = total > 0 ? (effectiveWeight / total * 100) : 0;
+
+    pctInput.value = +pctVal.toFixed(2);
+    rangeInput.value = +pctVal.toFixed(2);
+    lockedInput.checked = !!(entry.cfg && entry.cfg.locked);
+    excludedInput.checked = !!(entry.cfg && entry.cfg.excluded);
+    autoScaleInput.checked = false;
+
+    function updateEstimate(){
+      const newPct = Math.max(0, Math.min(100, Number(pctInput.value)||0));
+      if (autoScaleInput.checked){
+        estimateEl.textContent = `Estimated chance: ${newPct.toFixed(2)}% (others auto-scaled)`;
+      } else {
+        const totalWithout = sumWeights(entries) - effectiveWeight;
+        const totalAfter = totalWithout + newPct;
+        const chance = totalAfter > 0 ? (newPct / totalAfter * 100) : 0;
+        estimateEl.textContent = `Estimated chance: ${chance.toFixed(2)}% (others unchanged)`;
+      }
+    }
+    updateEstimate();
+
+    pctInput.addEventListener('input', ()=> { const v = Math.max(0, Math.min(100, Number(pctInput.value)||0)); rangeInput.value = v; updateEstimate(); });
+    rangeInput.addEventListener('input', ()=> { pctInput.value = rangeInput.value; updateEstimate(); });
+    autoScaleInput.addEventListener('change', updateEstimate);
+
+    pop.querySelector('#popCancel').addEventListener('click', ()=> closePopover());
+    pop.querySelector('#popSave').addEventListener('click', ()=>{
+      const newPct = Math.max(0, Math.min(100, Number(pctInput.value)||0));
+      const lock = lockedInput.checked;
+      const excl = excludedInput.checked;
+      const autoscale = autoScaleInput.checked;
+
+      if (autoscale){
+        applyPercentAutoScale(index, newPct);
+      } else {
+        entries[index].weight = newPct;
+      }
+      entries[index].cfg = Object.assign({}, entries[index].cfg || {}, { locked: !!lock, excluded: !!excl });
+      saveLast();
+      renderEntries();
+      draw();
+      closePopover();
+      showToast('Configuration saved', 'success', 2200);
+    });
+
+    const popRect = pop.getBoundingClientRect();
+    const bodyRect = document.body.getBoundingClientRect();
+    let left = rect.right + 8;
+    let top = rect.top;
+    if (popRect.width > bodyRect.width - 16) {
+      left = 8;
+    } else if (left + popRect.width > bodyRect.width - 12) {
+      left = rect.left - popRect.width - 8;
+    }
+    if (top + popRect.height > window.innerHeight - 12) {
+      top = Math.max(8, window.innerHeight - popRect.height - 12);
+    }
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    pop.style.left = `${Math.max(8, left)}px`;
+    pop.style.top = `${Math.max(8, top + scrollY)}px`;
+
+    setTimeout(()=> {
+      const onDocClick = (ev) => {
+        if (!pop.contains(ev.target) && ev.target !== anchorEl) closePopover();
+      };
+      document.addEventListener('pointerdown', onDocClick, { once: true });
+    }, 40);
+  }
+
+  function closePopover(){
+    if (!currentPopover) return;
+    currentPopover.remove();
+    currentPopover = null;
+  }
+
+  function applyPercentAutoScale(index, pct){
+    pct = Math.max(0, Math.min(100, Number(pct)||0));
+    const others = [];
+    for (let i=0;i<entries.length;i++){
+      if (i === index) continue;
+      if (entries[i].cfg && entries[i].cfg.excluded) continue;
+      others.push(i);
+    }
+    const remain = Math.max(0, 100 - pct);
+    if (others.length === 0){
+      entries[index].weight = pct;
+      return;
+    }
+    let sumOthers = 0;
+    others.forEach(i => sumOthers += Math.max(0, Number(entries[i].weight) || 0));
+    if (sumOthers <= 0) {
+      const each = remain / others.length;
+      others.forEach(i => entries[i].weight = each);
+    } else {
+      const scale = remain / sumOthers;
+      others.forEach(i => {
+        entries[i].weight = Number((entries[i].weight * scale).toFixed(4));
+      });
+    }
+    entries[index].weight = pct;
+  }
+
   addBtn.addEventListener('click', addNew);
   newText.addEventListener('keydown', (e)=> { if (e.key === 'Enter') addNew(); });
   function addNew(){
     const text = newText.value.trim(); if (!text) return;
-    entries.push({ text, weight: Math.max(0.0001,Number(newWeight.value)||1), color: newColor.value });
+    entries.push({ text, weight: Math.max(0.0001,Number(newWeight.value)||1), color: newColor.value, cfg: { locked:false, excluded:false } });
     newText.value=''; newWeight.value='1'; newColor.value='#3b82f6'; renderEntries(); draw(); saveLast();
     entriesList.scrollTop = entriesList.scrollHeight;
+    showToast('Entry added', 'success', 1600);
   }
 
-  // weighted pick
   function pickTarget(){
     const total = sumWeights(entries);
     if (!entries.length) return { index:0, angleDeg:-90 };
     const r = Math.random() * total;
     let acc = 0, chosen = entries.length - 1;
     for (let i=0;i<entries.length;i++){
-      acc += entries[i].weight;
+      const w = (entries[i].cfg && entries[i].cfg.excluded) ? 0 : Math.max(0, Number(entries[i].weight)||0);
+      acc += w;
       if (r <= acc) { chosen = i; break; }
     }
     let start = -Math.PI/2;
     for (let i=0;i<chosen;i++){
-      start += (entries[i].weight/total) * (Math.PI*2);
+      const w = (entries[i].cfg && entries[i].cfg.excluded) ? 0 : Math.max(0, Number(entries[i].weight)||0);
+      start += (w/ total) * (Math.PI*2);
     }
-    const sliceAngle = (entries[chosen].weight/total) * (Math.PI*2);
+    const wChosen = (entries[chosen].cfg && entries[chosen].cfg.excluded) ? 0 : Math.max(0, Number(entries[chosen].weight)||0);
+    const sliceAngle = (wChosen/total) * (Math.PI*2);
     const offset = Math.random() * sliceAngle;
     const targetRad = start + offset;
     const targetDeg = targetRad * 180 / Math.PI;
@@ -544,9 +912,11 @@
 
   function norm360(d){ return ((d % 360) + 360) % 360; }
 
-  // spin logic (cumulative rotation kept)
   function spin(){
     if (isSpinning || entries.length === 0) return;
+    const totalW = sumWeights(entries);
+    if (totalW <= 0) { showToast('All entries have zero weight or are excluded.', 'error', 3500); return; }
+
     isSpinning = true;
     spinBtn.style.pointerEvents = 'none';
     spinLabel.textContent = 'SPINNING...';
@@ -557,7 +927,6 @@
     const duration = Math.max(0.6, Number(durationInput.value) || 4.2);
     const easing = easingInput.value || 'cubic-bezier(.2,.9,.1,1)';
 
-    // align chosen slice to -90deg (top).
     const alignDeg = -90 - angleDeg;
     const alignNorm = norm360(alignDeg);
     const currentMod = norm360(rotationDeg);
@@ -565,11 +934,9 @@
     const jitter = (Math.random() - 0.5) * 6;
     const finalRotation = rotationDeg + (extraRot * 360) + delta + jitter;
 
-    // animate
     canvas.style.transition = `transform ${duration}s ${easing}`;
     requestAnimationFrame(()=> { canvas.style.transform = `rotate(${finalRotation}deg)`; });
 
-    // handle end
     canvas.addEventListener('transitionend', function onEnd(){
       canvas.style.transition = '';
       rotationDeg = finalRotation;
@@ -579,8 +946,7 @@
       spinSub.textContent = `Winner: ${entries[index].text}`;
       draw(index);
 
-      // show win popup & confetti
-      showWin(entries[index], index);
+      showWin(entries[index]);
 
       history.unshift({ text: entries[index].text, when: new Date().toLocaleString(), set: setName.value || 'current' });
       saveHistory();
@@ -596,7 +962,6 @@
     }
   });
 
-  // Save/load sets functions (same as before)
   function loadSavedSets(){
     try { savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
     refreshSavedSelect();
@@ -608,48 +973,55 @@
     });
   }
 
+  // Save set (auto-normalize removed per previous change)
   saveSet.addEventListener('click', ()=>{
-    const name = (setName.value || '').trim(); if (!name) return alert('Provide a name for the set.');
-    savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color }));
+    const name = (setName.value || '').trim();
+    if (!name) { showToast('Provide a name for the set before saving.', 'error', 2800); return; }
+
+    savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color, cfg: e.cfg || {} }));
     localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
-    refreshSavedSelect(); alert('Set saved locally.');
+    refreshSavedSelect();
+    showToast('Set saved locally.', 'success', 2200);
   });
 
   loadSet.addEventListener('click', ()=>{
-    const name = savedSets.value; if (!name) return alert('Choose a saved set to load.');
-    entries = (savedSetsObj[name] || []).map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color }));
+    const name = savedSets.value; if (!name) { showToast('Choose a saved set to load.', 'error', 2000); return; }
+    const arr = savedSetsObj[name] || [];
+    entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color: a.color||pickColor(0,1), cfg: a.cfg || { locked:false, excluded:false } }));
     setName.value = name; renderEntries(); draw(); saveLast();
+    showToast('Set loaded.', 'info', 1600);
   });
 
   delSet.addEventListener('click', ()=>{
-    const name = savedSets.value; if (!name) return alert('Choose a saved set.');
+    const name = savedSets.value; if (!name) { showToast('Choose a saved set to delete.', 'error', 2000); return; }
     if (!confirm(`Delete set "${name}"?`)) return;
     delete savedSetsObj[name];
     localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
-    refreshSavedSelect(); alert('Deleted.');
+    refreshSavedSelect(); showToast('Saved set deleted.', 'info', 1600);
   });
 
-  // Normalize / Clear
   normalizeBtn.addEventListener('click', ()=>{
     const total = sumWeights(entries) || 1;
-    entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(2)) }));
+    entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(4)), cfg: e.cfg || {} }));
     renderEntries(); draw(); saveLast();
+    showToast('Normalized to 100%.', 'success', 1600);
   });
 
   clearBtn.addEventListener('click', ()=> {
     if (!confirm('Clear all entries?')) return;
     entries = []; renderEntries(); draw(); saveLast();
+    showToast('Cleared entries.', 'info', 1400);
   });
 
-  // Export/import
   function downloadJSON(obj, filename){
     const b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(b);
     const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   }
-  exportBtn.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
-  exportBtn2.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
+  exportBtn.addEventListener('click', ()=> { downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json'); showToast('Export started.', 'info', 1800); } );
+  exportBtn2.addEventListener('click', ()=> { downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json'); showToast('Export started.', 'info', 1800); } );
+
   function importJSON(){
     const f = document.createElement('input'); f.type='file'; f.accept='application/json';
     f.onchange = (ev)=>{
@@ -659,11 +1031,11 @@
         try {
           const data = JSON.parse(e.target.result);
           if (Array.isArray(data.entries)) {
-            entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1) }));
+            entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1), cfg: x.cfg || { locked:false, excluded:false } }));
             if (data.meta && data.meta.savedSetsObj) { savedSetsObj = {...savedSetsObj, ...data.meta.savedSetsObj}; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); }
-            renderEntries(); draw(); refreshSavedSelect(); saveLast(); alert('Imported.');
-          } else { alert('Invalid file format.'); }
-        } catch(err){ alert('Could not parse JSON.'); }
+            renderEntries(); draw(); refreshSavedSelect(); saveLast(); showToast('Imported JSON.', 'success', 1800);
+          } else { showToast('Invalid file format.', 'error', 2400); }
+        } catch(err){ showToast('Could not parse JSON.', 'error', 2400); }
       };
       r.readAsText(file);
     };
@@ -672,7 +1044,6 @@
   importBtn.addEventListener('click', importJSON);
   importBtn2.addEventListener('click', importJSON);
 
-  // History
   function saveHistory(){ localStorage.setItem(STORAGE.history, JSON.stringify(history)); renderHistory(); }
   function renderHistory(){
     historyList.innerHTML = '';
@@ -685,29 +1056,21 @@
   }
   copyHistory.addEventListener('click', ()=> {
     const txt = history.map(h=>`${h.when} — ${h.text} (${h.set})`).join('\n');
-    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> alert('History copied.'));
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> showToast('History copied to clipboard.', 'success', 1600));
   });
-  clearHistory.addEventListener('click', ()=> { if(confirm('Clear history?')){ history=[]; saveHistory(); } });
+  clearHistory.addEventListener('click', ()=> { if(confirm('Clear history?')){ history=[]; saveHistory(); showToast('History cleared.', 'info', 1600); } });
 
-  // Save last
   function saveLast(){ localStorage.setItem(STORAGE.last, JSON.stringify(entries)); }
   function loadLast(){
     try {
       const raw = localStorage.getItem(STORAGE.last);
-      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color||pickColor(0,1) })); }
+      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color: a.color||pickColor(0,1), cfg: a.cfg || { locked:false, excluded:false } })); }
     } catch(e){}
   }
 
-  // helpers
-  function pickColor(i,t){ const hue = Math.round(210 - (i/(Math.max(1,t)))*210); return `hsl(${hue} 88% 56%)`; }
-  function sumWeights(arr){ return arr.reduce((s,e)=> s + Math.max(0,Number(e.weight)||0), 0); }
-
-  // --- WIN popup + confetti implementation ---
   let confettiParticles = [];
-  let confettiRunning = false;
   let confettiRaf = null;
   function startConfetti(colors, duration = 2200){
-    // colors: array of color strings for particles
     resizeConfetti();
     const w = confettiCanvas.width / (window.devicePixelRatio || 1);
     const h = confettiCanvas.height / (window.devicePixelRatio || 1);
@@ -726,20 +1089,15 @@
         ttl: 80 + Math.random()*60
       });
     }
-    confettiRunning = true;
     const start = performance.now();
     function step(now){
       const t = now - start;
       confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-      const w = confettiCanvas.width / (window.devicePixelRatio || 1);
-      const h = confettiCanvas.height / (window.devicePixelRatio || 1);
       confettiParticles.forEach(p=>{
         p.x += p.vx;
         p.y += p.vy;
         p.rot += p.vr;
-        p.vy += 0.14; // gravity
-        p.life++;
-        // draw rectangle particle
+        p.vy += 0.14;
         confettiCtx.save();
         confettiCtx.translate(p.x, p.y);
         confettiCtx.rotate(p.rot * Math.PI/180);
@@ -747,178 +1105,95 @@
         confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
         confettiCtx.restore();
       });
-
-      // stop after duration
-      if (t < duration) {
-        confettiRaf = requestAnimationFrame(step);
-      } else {
-        // fade out: continue drawing until particles fall off screen a bit
-        confettiRaf = requestAnimationFrame(() => {
-          // quick fade and clear
-          confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-          confettiRunning = false;
-        });
-      }
+      if (t < duration) confettiRaf = requestAnimationFrame(step);
+      else { setTimeout(()=> { confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height); }, 200); }
     }
     confettiRaf = requestAnimationFrame(step);
   }
-
-  function stopConfetti(){
-    if (confettiRaf) cancelAnimationFrame(confettiRaf);
-    confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-    confettiRunning = false;
-    confettiParticles = [];
-  }
+  function stopConfetti(){ if (confettiRaf) cancelAnimationFrame(confettiRaf); confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height); confettiParticles = []; confettiRaf = null; }
 
   let winAutoHideTimer = null;
-  function showWin(entry, index){
-    // set text
-    winText.textContent = entry.text;
+  function showWin(entry){
+    winText.textContent = entry.text || '(winner)';
     winSub.textContent = `Selected — ${new Date().toLocaleTimeString()}`;
-
-    // show overlay & animate
     winOverlay.style.display = 'flex';
     winOverlay.setAttribute('aria-hidden','false');
-    // small delay to allow display->transition
-    requestAnimationFrame(()=> {
-      winCard.classList.add('show');
-    });
-
-    // start confetti using slice color + accent palette
+    requestAnimationFrame(()=> { winCard.classList.add('show'); });
     const palette = [entry.color || '#ffd166', '#ffffff', '#ff9de2', '#6c5ce7', '#06b6d4'];
     startConfetti(palette, 2400);
-
-    // auto-hide after 4.2s
     if (winAutoHideTimer) clearTimeout(winAutoHideTimer);
-    winAutoHideTimer = setTimeout(()=> { hideWin(); }, 4200);
+    winAutoHideTimer = setTimeout(()=> hideWin(), 4200);
   }
-
   function hideWin(){
-    if (!winOverlay) return;
     winCard.classList.remove('show');
-    // stop confetti
     stopConfetti();
-    // hide overlay after transition
-    setTimeout(()=> {
-      winOverlay.style.display = 'none';
-      winOverlay.setAttribute('aria-hidden','true');
-    }, 280);
+    setTimeout(()=> { winOverlay.style.display = 'none'; winOverlay.setAttribute('aria-hidden','true'); }, 280);
     if (winAutoHideTimer) { clearTimeout(winAutoHideTimer); winAutoHideTimer = null; }
   }
-
-  // connect popup controls
   winClose.addEventListener('click', hideWin);
   dismissWinner.addEventListener('click', hideWin);
-  copyWinner.addEventListener('click', ()=>{
+  copyWinner.addEventListener('click', ()=> {
     const txt = winText.textContent || '';
     navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> {
       copyWinner.textContent = 'Copied';
       setTimeout(()=> copyWinner.textContent = 'Copy Winner', 1200);
+      showToast('Winner copied to clipboard', 'success', 1400);
     });
   });
 
-  // Save/load sets helpers, history, export/import (same as before)
-  function loadSavedSets(){
-    try { savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
-    refreshSavedSelect();
-  }
-  function refreshSavedSelect(){
-    savedSets.innerHTML = '<option value="">Load saved set…</option>';
-    Object.keys(savedSetsObj).forEach(name=>{
-      const opt = document.createElement('option'); opt.value = name; opt.textContent = name; savedSets.appendChild(opt);
-    });
-  }
+  // JSON Options toggle logic: position the panel directly under the savedSets dropdown
+  let jsonPanelOpen = false;
+  function showJsonPanel(){
+    // show it (hidden -> block) to measure, but keep it invisible while measuring
+    jsonPanel.style.display = 'block';
+    jsonPanel.style.visibility = 'hidden';
+    jsonPanel.setAttribute('aria-hidden', 'false');
 
-  saveSet.addEventListener('click', ()=>{
-    const name = (setName.value || '').trim(); if (!name) return alert('Provide a name for the set.');
-    savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color }));
-    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
-    refreshSavedSelect(); alert('Set saved locally.');
+    // measure panel
+    const panelRect = jsonPanel.getBoundingClientRect();
+    const panelW = panelRect.width || 360;
+    const panelH = panelRect.height || 200;
+
+    // position under savedSets select
+    const selRect = savedSets.getBoundingClientRect();
+    let left = selRect.left + window.pageXOffset;
+    if (left + panelW > window.innerWidth - 12) {
+      left = Math.max(8, window.innerWidth - panelW - 12);
+    }
+    if (left < 8) left = 8;
+
+    let top = selRect.bottom + window.pageYOffset + 8;
+
+    // if not enough space below, place above the select
+    if (top + panelH > window.innerHeight - 12) {
+      top = selRect.top + window.pageYOffset - panelH - 8;
+      if (top < 8) top = 8;
+    }
+
+    jsonPanel.style.left = `${left}px`;
+    jsonPanel.style.top = `${top}px`;
+
+    // reveal
+    jsonPanel.style.visibility = 'visible';
+    jsonOptionsBtn.setAttribute('aria-expanded', 'true');
+    jsonPanelOpen = true;
+  }
+  function hideJsonPanel(){
+    jsonPanel.style.display = 'none';
+    jsonPanel.setAttribute('aria-hidden', 'true');
+    jsonOptionsBtn.setAttribute('aria-expanded', 'false');
+    jsonPanelOpen = false;
+  }
+  jsonOptionsBtn.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (jsonPanelOpen) hideJsonPanel(); else { loadSavedSets(); showJsonPanel(); }
+  });
+  // close json panel when clicking outside
+  document.addEventListener('pointerdown', (ev) => {
+    if (!jsonPanelOpen) return;
+    if (!jsonPanel.contains(ev.target) && ev.target !== jsonOptionsBtn) hideJsonPanel();
   });
 
-  loadSet.addEventListener('click', ()=>{
-    const name = savedSets.value; if (!name) return alert('Choose a saved set to load.');
-    entries = (savedSetsObj[name] || []).map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color }));
-    setName.value = name; renderEntries(); draw(); saveLast();
-  });
-
-  delSet.addEventListener('click', ()=>{
-    const name = savedSets.value; if (!name) return alert('Choose a saved set.');
-    if (!confirm(`Delete set "${name}"?`)) return;
-    delete savedSetsObj[name];
-    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
-    refreshSavedSelect(); alert('Deleted.');
-  });
-
-  normalizeBtn.addEventListener('click', ()=>{
-    const total = sumWeights(entries) || 1;
-    entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(2)) }));
-    renderEntries(); draw(); saveLast();
-  });
-
-  clearBtn.addEventListener('click', ()=> {
-    if (!confirm('Clear all entries?')) return;
-    entries = []; renderEntries(); draw(); saveLast();
-  });
-
-  // Export/import JSON
-  function downloadJSON(obj, filename){
-    const b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(b);
-    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  }
-  exportBtn.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
-  exportBtn2.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
-  importBtn.addEventListener('click', importJSON);
-  importBtn2.addEventListener('click', importJSON);
-  function importJSON(){
-    const f = document.createElement('input'); f.type='file'; f.accept='application/json';
-    f.onchange = (ev)=>{
-      const file = ev.target.files[0]; if (!file) return;
-      const r = new FileReader();
-      r.onload = (e)=> {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (Array.isArray(data.entries)) {
-            entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1) }));
-            if (data.meta && data.meta.savedSetsObj) { savedSetsObj = {...savedSetsObj, ...data.meta.savedSetsObj}; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); }
-            renderEntries(); draw(); refreshSavedSelect(); saveLast(); alert('Imported.');
-          } else { alert('Invalid file format.'); }
-        } catch(err){ alert('Could not parse JSON.'); }
-      };
-      r.readAsText(file);
-    };
-    f.click();
-  }
-
-  // History functions
-  function saveHistory(){ localStorage.setItem(STORAGE.history, JSON.stringify(history)); renderHistory(); }
-  function renderHistory(){
-    historyList.innerHTML = '';
-    if (!history.length) { historyList.innerHTML = '<div style="color:var(--muted);padding:8px">No spins yet.</div>'; return; }
-    history.forEach(h=> {
-      const d = document.createElement('div'); d.style.padding='6px'; d.style.marginBottom='6px'; d.style.borderRadius='6px'; d.style.background='rgba(255,255,255,0.012)';
-      d.textContent = `${h.when} — ${h.text} (${h.set})`;
-      historyList.appendChild(d);
-    });
-  }
-  copyHistory.addEventListener('click', ()=> {
-    const txt = history.map(h=>`${h.when} — ${h.text} (${h.set})`).join('\n');
-    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> alert('History copied.'));
-  });
-  clearHistory.addEventListener('click', ()=> { if(confirm('Clear history?')){ history=[]; saveHistory(); } });
-
-  // Save last functions
-  function saveLast(){ localStorage.setItem(STORAGE.last, JSON.stringify(entries)); }
-  function loadLast(){
-    try {
-      const raw = localStorage.getItem(STORAGE.last);
-      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color||pickColor(0,1) })); }
-    } catch(e){}
-  }
-
-  // init
   function init(){
     try{ savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
     try{ history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]'); } catch(e){ history = []; }
@@ -926,20 +1201,15 @@
     renderEntries(); renderHistory(); draw();
     canvas.style.transform = `rotate(${rotationDeg}deg)`;
     resizeConfetti();
+    refreshSavedSelect();
   }
   init();
 
-  // Small debug API
   window.cleanWheel = {
     getEntries: ()=> entries,
     setEntries: (arr)=> { entries = arr; renderEntries(); draw(); saveLast(); },
     spin
   };
-
-  // Recompute sizes when overlay shown (helpful mobile)
-  const observer = new ResizeObserver(()=>{ resizeConfetti(); });
-  observer.observe(document.body);
-
 })();
 </script>
 </body>
