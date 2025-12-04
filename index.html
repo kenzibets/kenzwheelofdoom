@@ -3,17 +3,25 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<!-- Favicon / tab icon -->
 <link rel="icon" href="https://i.imgur.com/BpOOGQ8.png" type="image/png">
+  
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-<title>Wheel Of Doom</title>
 
-<!-- OG meta kept -->
+<title>Wheel Of Doom</title>
 <meta property="og:title" content="@mackenzie_fordd" />
 <meta property="og:description" content="Kick streamer" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://i.imgur.com/BpOOGQ8.png" />
+<meta property="og:image:secure_url" content="https://i.imgur.com/BpOOGQ8.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="1200" />
+<link rel="image_src" href="https://i.imgur.com/BpOOGQ8.png" />
 <meta name="twitter:card" content="summary_large_image" />
-
+<meta name="twitter:title" content="@mackenzie_fordd" />
+<meta name="twitter:description" content="Kick streamer" />
+<meta name="twitter:image" content="https://i.imgur.com/BpOOGQ8.png" />
 <style>
   :root{
     --bg:#071122;
@@ -24,9 +32,7 @@
     --glass: rgba(255,255,255,0.03);
     --radius:14px;
   }
-
-  /* reset / basics */
-  *, *::before, *::after { box-sizing: border-box; }
+  * { box-sizing: border-box; }
   html,body { height:100%; margin:0; }
   body{
     font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
@@ -34,68 +40,43 @@
       radial-gradient(800px 400px at 10% 10%, rgba(108,92,231,0.06), transparent 6%),
       linear-gradient(180deg,#061322,var(--bg));
     color:#e6eef8;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:28px;
-    overflow-x: hidden; /* avoid tiny horizontal scroll causing apparent off-center */
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
+    display:flex;align-items:flex-start;justify-content:center;padding:28px;
   }
 
-  /* layout container: flexible + centered */
+  /* Layout */
   .app {
-    width:100%;
-    max-width:1200px;
-    margin:0 auto;
-    display:grid;
-    /* primary column (wheel) and secondary column (controls)
-       secondary will never force layout wider than the viewport because we use min() */
-    grid-template-columns: 1fr min(520px, 40vw);
-    gap:18px;
+    width:1200px; max-width:calc(100% - 48px);
+    display:grid; grid-template-columns: 1fr 520px; gap:18px;
     align-items:start;
-    min-width:0; /* ensure grid can shrink */
   }
 
-  /* left panel (wheel) */
+  /* Left wheel */
   .panel {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:var(--radius);
-    padding:18px;
-    box-shadow: 0 12px 40px rgba(2,8,23,0.6);
-    display:flex;
-    flex-direction:column;
-    min-height:560px;
-    min-width:0; /* CRITICAL: allow panel to shrink inside grid (prevents overflow) */
+    border-radius:var(--radius); padding:18px; box-shadow: 0 12px 40px rgba(2,8,23,0.6);
+    display:flex; flex-direction:column; min-height:560px;
   }
 
   .header { display:flex;align-items:center;justify-content:space-between; gap:12px; margin-bottom:12px; }
   .brand { display:flex;align-items:center;gap:12px; }
-  .logo { width:54px;height:54px;border-radius:12px; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:18px;font-family:'UnifrakturCook',serif; box-shadow: 0 8px 24px rgba(6,182,212,0.12); }
+  .logo {
+    width:54px;height:54px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:18px;font-family:'UnifrakturCook',serif;
+    box-shadow: 0 8px 24px rgba(6,182,212,0.12);
+  }
   .title{ font-weight:800; font-size:18px; }
   .subtitle{ font-size:13px; color:var(--muted); margin-top:2px; }
 
-  /* wheel area is centered via flexbox */
-  .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; min-width:0; }
+  .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; }
+  /* make wheel-frame responsive: use min() so it never exceeds available width and aspect-ratio to keep it square */
+  .wheel-frame { width: min(580px, 92vw); aspect-ratio: 1 / 1; position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; max-width:100%; }
 
-  /*
-    Use min(92vw, 580px) to let the wheel scale responsively. On very small screens
-    it will use viewport width while never exceeding the desktop size.
-    margin:auto ensures it stays centered inside the panel.
-  */
-  .wheel-frame { width: min(92vw, 580px); height: min(92vw, 580px); position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; margin:0 auto; min-width:0; }
-
-  /* canvas: use block + aspect-ratio so CSS size is a perfect square.
-     JS will set canvas pixel backing store to match CSS size * DPR. */
   canvas#wheel {
-    display:block;
-    width:100%;
-    height:auto;
-    aspect-ratio:1 / 1;
-    border-radius:50%;
+    width:100%; height:100%; border-radius:50%;
     box-shadow: 0 20px 60px rgba(2,8,23,0.6), inset 0 -10px 40px rgba(0,0,0,0.25);
-    will-change: transform;
-    transform-origin:50% 50%;
+    will-change: transform; transform-origin:50% 50%;
+    display:block;
   }
 
   /* pointer */
@@ -108,12 +89,11 @@
   .center-btn .big{ font-weight:800; font-size:20px; letter-spacing:1px; }
   .center-btn .small{ font-size:12px; opacity:0.85; margin-top:6px; font-weight:700; color:#e9f2ff; }
 
-  /* right column controls (can shrink) */
+  /* Right column */
   .controls-right {
     display:flex; flex-direction:column; gap:12px;
-    width:100%;
+    width:520px;
     max-height: calc(100vh - 56px);
-    min-width:0; /* CRITICAL: prevents the right column from forcing horizontal overflow */
   }
 
   .side {
@@ -121,17 +101,24 @@
     border-radius:var(--radius); padding:14px; box-shadow: 0 12px 30px rgba(2,6,23,0.6);
     display:flex; flex-direction:column; gap:12px;
     overflow:auto;
+    /* extra bottom padding so the absolutely positioned controls don't cover content */
     padding-bottom: 240px;
-    position:relative;
-    min-width:0;
+    position:relative; /* for absolute panels inside */
   }
+  .side h3{ margin:0; font-size:16px; font-weight:800; }
 
-  /* keep the rest of your UI styles unchanged (scrollbars, entries, controls etc) */
+  /* entries + scroll */
   .entries-wrap { display:flex; flex-direction:column; gap:8px; flex: 1 1 auto; min-height:0; }
-  .entries { padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); overflow:auto; max-height: none; min-width:0; }
+  .entries {
+    padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    overflow:auto;
+    max-height: none;
+  }
   .entries::-webkit-scrollbar { width:12px; }
   .entries::-webkit-scrollbar-track { background: transparent; margin:6px 0; border-radius:10px; }
   .entries::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border-radius:10px; border: 3px solid rgba(0,0,0,0.18); background-clip: padding-box; }
+  .entries { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
+
   .entry-row { display:grid; grid-template-columns: 1fr 72px 44px 56px 36px; gap:8px; align-items:center; padding:8px; margin-bottom:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); }
   .entry-row textarea { background:transparent; border:0; color:inherit; outline:none; font-size:14px; resize:none; overflow:hidden; min-height:36px; line-height:18px; padding:4px 6px; border-radius:6px; }
   .entry-row input[type="number"]{ background:transparent; border:0; color:inherit; outline:none; font-size:14px; text-align:center; }
@@ -139,9 +126,12 @@
   .entry-row .gear { width:36px;height:36px;border-radius:8px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center }
   .entry-row .remove { width:36px;height:36px;border-radius:8px;border:0;background:transparent;color:#ffccd5;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center }
 
+  /* Controls always visible (Save + JSON Options pinned) */
   .controls-bottom {
     display:flex; gap:8px; align-items:center; justify-content:flex-start;
     margin-top:8px; flex-shrink:0;
+
+    /* pinned inside .side */
     position: absolute;
     left: 14px;
     right: 14px;
@@ -151,18 +141,44 @@
     border-radius: 10px;
     background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.02));
     align-items:center;
+
+    /* KEY: allow wrapping so controls never overlap */
     flex-wrap: wrap;
   }
 
+  /* Control groups: explicit sizing + wrapping behavior */
   .save-bar-left { display:flex; gap:8px; align-items:center; flex: 1 1 auto; min-width:0; flex-wrap:wrap; }
   .set-name { flex: 0 1 200px; min-width:120px; max-width:42%; }
   .save-btn { flex: 0 0 auto; }
   .saved-select { flex: 1 1 200px; min-width:120px; max-width:260px; color: #000; }
-  .saved-select option { color: #000; }
+  .saved-select option { color: #000; } /* attempt to ensure option text displays black where browsers support it */
   .saved-actions { display:flex; gap:8px; flex: 0 0 auto; }
+
   .save-bar-right { display:flex; gap:8px; align-items:center; margin-left:auto; flex: 0 0 auto; }
 
-  .json-panel { position: fixed; z-index: 6; display: none; gap: 12px; width: 360px; border-radius: 12px; padding: 14px; box-shadow: 0 18px 60px rgba(2,6,23,0.45); border: 1px solid rgba(255,255,255,0.03); background: linear-gradient(180deg, rgba(12,16,22,0.98), rgba(20,24,30,0.98)); }
+  /* JSON panel: now fixed-positioned; background made opaque and not transparent; will be positioned by JS beneath the savedSets select */
+  .json-panel {
+    position: fixed;
+    z-index: 6;
+    display: none;
+    gap: 12px;
+    width: 360px;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 18px 60px rgba(2,6,23,0.45);
+    border: 1px solid rgba(255,255,255,0.03);
+    /* OPAQUE background (no transparency) */
+    background: linear-gradient(180deg, rgba(12,16,22,0.98), rgba(20,24,30,0.98));
+  }
+
+  .json-grid {
+    display:grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap:10px;
+    align-items:center;
+  }
+
+  .json-grid .btn { width:100%; justify-content:center; padding:10px 12px; }
 
   .row { display:flex; gap:8px; align-items:center; }
   .text-input { padding:10px; border-radius:10px; background:var(--glass); border:1px solid rgba(255,255,255,0.03); color:inherit; outline:none; }
@@ -172,29 +188,200 @@
   .small { font-size:13px; color:var(--muted); }
   .meta { font-size:12px; text-align:center; color:#9fb4d9; margin-top:8px; }
 
-  .popover { position: absolute; min-width:260px; max-width:420px; background: linear-gradient(180deg, rgba(12,16,22,0.98), rgba(20,24,30,0.98)); border-radius:10px; padding:12px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); z-index:1200; color: #e6eef8; transform-origin: top left; border: 1px solid rgba(255,255,255,0.04); }
+  /* popover */
+  .popover {
+    position: absolute;
+    min-width:260px;
+    max-width:420px;
+    background: linear-gradient(180deg, rgba(12,16,22,0.98), rgba(20,24,30,0.98));
+    border-radius:10px;
+    padding:12px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    z-index:1200;
+    color: #e6eef8;
+    transform-origin: top left;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .popover .row { flex-direction:row; align-items:center; justify-content:space-between; }
+  .popover input[type="range"] { width:100%; }
+  .popover .label { font-size:13px; color:var(--muted); margin-bottom:6px; }
+  .popover .small { font-size:13px; color:var(--muted); }
+  .popover .estimate { font-size:13px; color:#bfe8ff; margin-top:6px; }
+
+  /* win overlay & confetti */
   .win-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999; background: linear-gradient(180deg, rgba(2,6,23,0.45), rgba(2,6,23,0.55)); backdrop-filter: blur(6px); }
   .win-card { width: min(720px, 92%); max-width:720px; border-radius:18px; padding:24px; text-align:center; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)); box-shadow: 0 30px 100px rgba(2,6,23,0.8), inset 0 1px 0 rgba(255,255,255,0.02); transform-origin:center; opacity:0; transform: translateY(18px) scale(.96); transition:opacity .28s cubic-bezier(.2,.9,.1,1), transform .36s cubic-bezier(.2,.9,.1,1); position:relative; overflow:hidden; }
+  .win-card.show { opacity:1; transform: translateY(0) scale(1); }
+  .win-title { font-size:14px; color:var(--muted); margin-bottom:6px; }
+  .win-winner { font-size:34px; font-weight:900; letter-spacing:0.6px; margin-bottom:6px; color:white; text-shadow: 0 6px 30px rgba(108,92,231,0.25); }
+  .win-sub { font-size:14px; color:#cfe6ff; margin-bottom:14px; }
+  .win-actions { display:flex; gap:12px; justify-content:center; margin-top:12px; }
+  .win-actions .btn { padding:10px 16px; font-weight:800; border-radius:10px; }
+  .win-close { position:absolute; top:12px; right:12px; background:transparent; border:0; color:var(--muted); font-size:20px; cursor:pointer; }
   #confetti-canvas { position:absolute; inset:0; pointer-events:none; z-index:1000; }
-  .toast-container { position: fixed; right: 18px; bottom: 18px; display:flex; flex-direction:column; gap:8px; z-index:1600; max-width: 360px; }
-  .toast { background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); color: #eaf6ff; padding:10px 12px; border-radius:10px; box-shadow: 0 12px 36px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03); font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:12px; }
 
-  /* responsive: stack columns under 1100px */
-  @media (max-width:1100px){
-    .app { grid-template-columns: 1fr; }
-    .wheel-frame { width: min(86vw, 520px); height: min(86vw, 520px); }
-    .controls-right { order: 2; width:100%; max-height: calc(100vh - 120px); }
-    .panel { order: 1; }
-    .json-panel { right: 18px; left: auto; width: 84%; bottom: 108px; }
+  /* toasts */
+  .toast-container {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    z-index:1600;
+    max-width: 360px;
   }
+  .toast {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    color: #eaf6ff;
+    padding:10px 12px;
+    border-radius:10px;
+    box-shadow: 0 12px 36px rgba(2,6,23,0.6);
+    border:1px solid rgba(255,255,255,0.03);
+    font-weight:700;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .toast.success { border-left:4px solid #34d399; }
+  .toast.error { border-left:4px solid #fb7185; }
+  .toast.info { border-left:4px solid #60a5fa; }
 
-  /* extra small screens: smaller wheel + reduced page padding */
+  /* responsive: wrap controls to rows on smaller widths */
+  @media (max-width:1100px){
+    .app{ grid-template-columns: 1fr; }
+    /* prefer percent-based width so it fits in narrow screens */
+    .wheel-frame{ width: min(520px, 92vw); aspect-ratio:1/1; }
+    .controls-right{ width:100%; max-height: calc(100vh - 120px); }
+    .json-panel { right: 18px; left: auto; width: 84%; bottom: 108px; }
+    .save-bar-left { width: 100%; }
+    .save-bar-right { width: 100%; margin-left: 0; justify-content: flex-end; }
+    .controls-bottom { gap:10px; }
+  }
   @media (max-width:640px){
-    body { padding: 14px; }
-    .wheel-frame { width: min(86vw, 360px); height: min(86vw, 360px); }
+    /* on narrow mobile screens center vertically and reduce paddings */
+    body{ align-items:center; padding:14px; }
+    .app{ max-width: calc(100% - 28px); gap:12px; }
+    .wheel-frame{ width: min(360px, 94vw); aspect-ratio: 1/1; padding:8px; }
     .json-panel { width: 92%; left: 4%; right: 4%; bottom: 110px; }
     .json-grid { grid-template-columns: 1fr; }
+    .set-name { max-width:100%; flex: 1 1 auto; }
+    .saved-select { max-width:100%; flex: 1 1 auto; }
+    .controls-right { width:100%; max-height: none; }
+    .panel { padding:12px; min-height: auto; }
+    .wheel-area { min-height: auto; padding:6px; gap:10px; }
+    /* scale center button so it never overflows small wheels */
+    .center-btn { width: clamp(96px, 24%, 140px); height: clamp(96px, 24%, 140px); }
+    .center-btn .big{ font-size: clamp(16px, 3.5vw, 20px); }
+    .center-btn .small{ font-size: clamp(10px, 2.6vw, 12px); }
   }
+
+  /* a little extra safety for ultra-small widths */
+  @media (max-width:380px) {
+    .wheel-frame { width: min(320px, 94vw); }
+    .center-btn { width: clamp(84px, 28%, 120px); height: clamp(84px, 28%, 120px); }
+    .pointer .tri { border-left:14px solid transparent;border-right:14px solid transparent;border-top:20px solid var(--accent1); }
+  }
+@media (max-width: 640px) {
+  body {
+    align-items: center;
+    padding: 14px;
+  }
+
+  .app {
+    max-width: calc(100% - 28px);
+    gap: 12px;
+  }
+
+  .panel {
+    padding: 12px;
+    min-height: auto;
+  }
+
+  .wheel-area {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    gap: 10px;
+    min-height: auto;
+  }
+
+  .wheel-frame {
+    width: min(360px, 94vw);
+    aspect-ratio: 1 / 1;
+    padding: 8px;
+    max-width: 100%;
+  }
+
+  canvas#wheel {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    display: block;
+  }
+
+  .center-btn {
+    width: clamp(96px, 24%, 140px);
+    height: clamp(96px, 24%, 140px);
+  }
+
+  .center-btn .big {
+    font-size: clamp(16px, 3.5vw, 20px);
+  }
+
+  .center-btn .small {
+    font-size: clamp(10px, 2.6vw, 12px);
+  }
+
+  .pointer {
+    top: 4px;
+  }
+
+  .pointer .tri {
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 20px solid var(--accent1);
+  }
+
+  .controls-right {
+    width: 100%;
+    max-height: none;
+  }
+
+  .json-panel {
+    width: 92%;
+    left: 4%;
+    right: 4%;
+    bottom: 110px;
+  }
+
+  .json-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .set-name,
+  .saved-select {
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .wheel-frame {
+    width: min(320px, 94vw);
+  }
+
+  .center-btn {
+    width: clamp(84px, 28%, 120px);
+    height: clamp(84px, 28%, 120px);
+  }
+
+  .pointer .tri {
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 18px solid var(--accent1);
+  }
+}
+  
 </style>
 </head>
 <body>
@@ -218,13 +405,12 @@
     </div>
 
     <div class="wheel-area">
-      <div class="wheel-frame" id="wheelFrame">
+      <div class="wheel-frame">
         <div class="pointer" aria-hidden="true">
           <div class="tri"></div>
           <div class="cap"></div>
         </div>
 
-        <!-- leave width/height attributes as initial; JS will size to match CSS + DPR -->
         <canvas id="wheel" width="1000" height="1000" aria-label="Prize wheel"></canvas>
 
         <div class="center-btn" id="spinBtn" title="Spin (Space)">
@@ -236,8 +422,7 @@
       </div>
     </div>
 
-    <!-- controls below wheel -->
-    <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap">
       <div class="row small">
         <label>Extra rotations</label>
         <input id="rotations" type="number" value="6" min="0" step="1" style="width:80px;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit;margin-left:8px">
@@ -261,8 +446,10 @@
   <div class="controls-right">
     <div class="side">
       <h3>Entries & settings</h3>
+
       <div class="entries-wrap">
         <div class="entries" id="entriesList" aria-live="polite"></div>
+
         <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
           <input id="newText" class="text-input" placeholder="Add entry (press Enter)" style="flex:1">
           <input id="newWeight" type="number" value="1" min="0.01" step="0.01" style="width:86px;padding:8px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit">
@@ -270,6 +457,7 @@
           <button id="addBtn" class="btn">Add</button>
         </div>
 
+        <!-- JSON panel (hidden until JSON Options is pressed) -->
         <div id="jsonPanel" class="json-panel" aria-hidden="true">
           <div class="json-grid">
             <button id="normalizeBtn" class="btn ghost">Normalize to 100%</button>
@@ -279,11 +467,15 @@
           </div>
         </div>
 
+        <!-- Controls pinned to the bottom: Save + Saved sets + JSON Options -->
         <div class="controls-bottom" role="region" aria-label="Primary save controls">
           <div class="save-bar-left">
             <input id="setName" class="text-input set-name" placeholder="Set name (save as)">
             <button id="saveSet" class="btn save-btn">Save</button>
+
+            <!-- moved OUT of JSON panel -->
             <select id="savedSets" class="text-input saved-select"><option value="">Load saved set…</option></select>
+
             <div class="saved-actions">
               <button id="loadSet" class="btn ghost">Load</button>
               <button id="delSet" class="btn ghost">Del</button>
@@ -294,6 +486,7 @@
             <button id="jsonOptionsBtn" class="btn ghost" aria-expanded="false" title="Show JSON / saved-set options">JSON Options ▾</button>
           </div>
         </div>
+
       </div>
 
       <div style="margin-top:8px">
@@ -301,13 +494,17 @@
         <div id="historyList" class="entries" style="max-height:120px;padding:8px"></div>
         <div style="display:flex;gap:8px;margin-top:8px"><button id="copyHistory" class="btn ghost">Copy</button><button id="clearHistory" class="btn ghost">Clear</button></div>
       </div>
+
     </div>
 
     <div class="meta">Saved locally in your browser (localStorage). No data leaves your machine.</div>
   </div>
 </div>
 
+<!-- popover container -->
 <div id="popoverRoot" style="position:fixed;left:0;top:0;pointer-events:none;z-index:1300"></div>
+
+<!-- WIN overlay + confetti canvas -->
 <div id="winOverlay" class="win-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="winTitle">
   <canvas id="confetti-canvas"></canvas>
   <div class="win-card" id="winCard" role="document" aria-live="polite">
@@ -322,6 +519,7 @@
   </div>
 </div>
 
+<!-- Toast container -->
 <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <script>
@@ -329,7 +527,6 @@
   const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
 
-  // DOM references (same as before)
   const entriesList = document.getElementById('entriesList');
   const addBtn = document.getElementById('addBtn');
   const newText = document.getElementById('newText');
@@ -392,25 +589,17 @@
   let rotationDeg = 0;
   let isSpinning = false;
 
-  /* Robust canvas sizing:
-     - Read the CSS size using getBoundingClientRect
-     - Multiply by devicePixelRatio to set canvas.width/height (backing store)
-     - Use ctx.setTransform(dpr,0,0,dpr,0,0) so drawing uses CSS coords
-     This follows the best practices for responsive canvas & DPR. */
   function resizeAndScale(){
     const rect = canvas.getBoundingClientRect();
-    // fallback if not in layout yet
-    const cssW = Math.max(2, rect.width || (document.documentElement.clientWidth * 0.6));
-    const cssH = Math.max(2, rect.height || cssW); // ensure square if unknown
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
-    // map drawing calls to CSS pixels
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    // resize confetti too
     resizeConfetti();
   }
-  window.addEventListener('resize', ()=> { resizeAndScale(); draw(); });
+  window.addEventListener('resize', ()=>{ resizeAndScale(); draw(); });
+  // orientation change often needs explicit handling on some mobile browsers
+  window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ resizeAndScale(); draw(); }, 120); });
 
   function resizeConfetti(){
     const rect = document.body.getBoundingClientRect();
@@ -604,7 +793,6 @@
     ctx.fill();
   }
 
-  /* --- entries UI code (unchanged) --- */
   function renderEntries(){
     entriesList.innerHTML = '';
     if (!entries.length) {
@@ -664,7 +852,6 @@
     textarea.style.height = (textarea.scrollHeight) + 'px';
   }
 
-  /* popover / config code (unchanged) */
   let currentPopover = null;
   function openPopoverForEntry(index, anchorEl){
     closePopover();
@@ -781,7 +968,11 @@
     }, 40);
   }
 
-  function closePopover(){ if (!currentPopover) return; currentPopover.remove(); currentPopover = null; }
+  function closePopover(){
+    if (!currentPopover) return;
+    currentPopover.remove();
+    currentPopover = null;
+  }
 
   function applyPercentAutoScale(index, pct){
     pct = Math.max(0, Math.min(100, Number(pct)||0));
@@ -792,7 +983,10 @@
       others.push(i);
     }
     const remain = Math.max(0, 100 - pct);
-    if (others.length === 0){ entries[index].weight = pct; return; }
+    if (others.length === 0){
+      entries[index].weight = pct;
+      return;
+    }
     let sumOthers = 0;
     others.forEach(i => sumOthers += Math.max(0, Number(entries[i].weight) || 0));
     if (sumOthers <= 0) {
@@ -892,35 +1086,111 @@
     }
   });
 
-  /* Save/load / sets / JSON / history logic unchanged */
-  function loadSavedSets(){ try { savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; } refreshSavedSelect(); }
-  function refreshSavedSelect(){ savedSets.innerHTML = '<option value="">Load saved set…</option>'; Object.keys(savedSetsObj).forEach(name=>{ const opt = document.createElement('option'); opt.value = name; opt.textContent = name; savedSets.appendChild(opt); }); }
+  function loadSavedSets(){
+    try { savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
+    refreshSavedSelect();
+  }
+  function refreshSavedSelect(){
+    savedSets.innerHTML = '<option value="">Load saved set…</option>';
+    Object.keys(savedSetsObj).forEach(name=>{
+      const opt = document.createElement('option'); opt.value = name; opt.textContent = name; savedSets.appendChild(opt);
+    });
+  }
 
-  saveSet.addEventListener('click', ()=>{ const name = (setName.value || '').trim(); if (!name) { showToast('Provide a name for the set before saving.', 'error', 2800); return; } savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color, cfg: e.cfg || {} })); localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); refreshSavedSelect(); showToast('Set saved locally.', 'success', 2200); });
+  // Save set (auto-normalize removed per previous change)
+  saveSet.addEventListener('click', ()=>{
+    const name = (setName.value || '').trim();
+    if (!name) { showToast('Provide a name for the set before saving.', 'error', 2800); return; }
 
-  loadSet.addEventListener('click', ()=>{ const name = savedSets.value; if (!name) { showToast('Choose a saved set to load.', 'error', 2000); return; } const arr = savedSetsObj[name] || []; entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color: a.color||pickColor(0,1), cfg: a.cfg || { locked:false, excluded:false } })); setName.value = name; renderEntries(); draw(); saveLast(); showToast('Set loaded.', 'info', 1600); });
+    savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color, cfg: e.cfg || {} }));
+    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
+    refreshSavedSelect();
+    showToast('Set saved locally.', 'success', 2200);
+  });
 
-  delSet.addEventListener('click', ()=>{ const name = savedSets.value; if (!name) { showToast('Choose a saved set to delete.', 'error', 2000); return; } if (!confirm(`Delete set "${name}"?`)) return; delete savedSetsObj[name]; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); refreshSavedSelect(); showToast('Saved set deleted.', 'info', 1600); });
+  loadSet.addEventListener('click', ()=>{
+    const name = savedSets.value; if (!name) { showToast('Choose a saved set to load.', 'error', 2000); return; }
+    const arr = savedSetsObj[name] || [];
+    entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color: a.color||pickColor(0,1), cfg: a.cfg || { locked:false, excluded:false } }));
+    setName.value = name; renderEntries(); draw(); saveLast();
+    showToast('Set loaded.', 'info', 1600);
+  });
 
-  normalizeBtn.addEventListener('click', ()=>{ const total = sumWeights(entries) || 1; entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(4)), cfg: e.cfg || {} })); renderEntries(); draw(); saveLast(); showToast('Normalized to 100%.', 'success', 1600); });
+  delSet.addEventListener('click', ()=>{
+    const name = savedSets.value; if (!name) { showToast('Choose a saved set to delete.', 'error', 2000); return; }
+    if (!confirm(`Delete set "${name}"?`)) return;
+    delete savedSetsObj[name];
+    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
+    refreshSavedSelect(); showToast('Saved set deleted.', 'info', 1600);
+  });
 
-  clearBtn.addEventListener('click', ()=> { if (!confirm('Clear all entries?')) return; entries = []; renderEntries(); draw(); saveLast(); showToast('Cleared entries.', 'info', 1400); });
+  normalizeBtn.addEventListener('click', ()=>{
+    const total = sumWeights(entries) || 1;
+    entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(4)), cfg: e.cfg || {} }));
+    renderEntries(); draw(); saveLast();
+    showToast('Normalized to 100%.', 'success', 1600);
+  });
 
-  function downloadJSON(obj, filename){ const b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
+  clearBtn.addEventListener('click', ()=> {
+    if (!confirm('Clear all entries?')) return;
+    entries = []; renderEntries(); draw(); saveLast();
+    showToast('Cleared entries.', 'info', 1400);
+  });
+
+  function downloadJSON(obj, filename){
+    const b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(b);
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
   exportBtn.addEventListener('click', ()=> { downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json'); showToast('Export started.', 'info', 1800); } );
   exportBtn2.addEventListener('click', ()=> { downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json'); showToast('Export started.', 'info', 1800); } );
 
-  function importJSON(){ const f = document.createElement('input'); f.type='file'; f.accept='application/json'; f.onchange = (ev)=>{ const file = ev.target.files[0]; if (!file) return; const r = new FileReader(); r.onload = (e)=> { try { const data = JSON.parse(e.target.result); if (Array.isArray(data.entries)) { entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1), cfg: x.cfg || { locked:false, excluded:false } })); if (data.meta && data.meta.savedSetsObj) { savedSetsObj = {...savedSetsObj, ...data.meta.savedSetsObj}; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); } renderEntries(); draw(); refreshSavedSelect(); saveLast(); showToast('Imported JSON.', 'success', 1800); } else { showToast('Invalid file format.', 'error', 2400); } } catch(err){ showToast('Could not parse JSON.', 'error', 2400); } }; r.readAsText(file); }; f.click(); }
+  function importJSON(){
+    const f = document.createElement('input'); f.type='file'; f.accept='application/json';
+    f.onchange = (ev)=>{
+      const file = ev.target.files[0]; if (!file) return;
+      const r = new FileReader();
+      r.onload = (e)=> {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data.entries)) {
+            entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1), cfg: x.cfg || { locked:false, excluded:false } }));
+            if (data.meta && data.meta.savedSetsObj) { savedSetsObj = {...savedSetsObj, ...data.meta.savedSetsObj}; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); }
+            renderEntries(); draw(); refreshSavedSelect(); saveLast(); showToast('Imported JSON.', 'success', 1800);
+          } else { showToast('Invalid file format.', 'error', 2400); }
+        } catch(err){ showToast('Could not parse JSON.', 'error', 2400); }
+      };
+      r.readAsText(file);
+    };
+    f.click();
+  }
   importBtn.addEventListener('click', importJSON);
   importBtn2.addEventListener('click', importJSON);
 
   function saveHistory(){ localStorage.setItem(STORAGE.history, JSON.stringify(history)); renderHistory(); }
-  function renderHistory(){ historyList.innerHTML = ''; if (!history.length) { historyList.innerHTML = '<div style="color:var(--muted);padding:8px">No spins yet.</div>'; return; } history.forEach(h=> { const d = document.createElement('div'); d.style.padding='6px'; d.style.marginBottom='6px'; d.style.borderRadius='6px'; d.style.background='rgba(255,255,255,0.012)'; d.textContent = `${h.when} — ${h.text} (${h.set})`; historyList.appendChild(d); }); }
-  copyHistory.addEventListener('click', ()=> { const txt = history.map(h=>`${h.when} — ${h.text} (${h.set})`).join('\n'); navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> showToast('History copied to clipboard.', 'success', 1600)); });
+  function renderHistory(){
+    historyList.innerHTML = '';
+    if (!history.length) { historyList.innerHTML = '<div style="color:var(--muted);padding:8px">No spins yet.</div>'; return; }
+    history.forEach(h=> {
+      const d = document.createElement('div'); d.style.padding='6px'; d.style.marginBottom='6px'; d.style.borderRadius='6px'; d.style.background='rgba(255,255,255,0.012)';
+      d.textContent = `${h.when} — ${h.text} (${h.set})`;
+      historyList.appendChild(d);
+    });
+  }
+  copyHistory.addEventListener('click', ()=> {
+    const txt = history.map(h=>`${h.when} — ${h.text} (${h.set})`).join('\n');
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> showToast('History copied to clipboard.', 'success', 1600));
+  });
   clearHistory.addEventListener('click', ()=> { if(confirm('Clear history?')){ history=[]; saveHistory(); showToast('History cleared.', 'info', 1600); } });
 
   function saveLast(){ localStorage.setItem(STORAGE.last, JSON.stringify(entries)); }
-  function loadLast(){ try { const raw = localStorage.getItem(STORAGE.last); if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color: a.color||pickColor(0,1), cfg: a.cfg || { locked:false, excluded:false } })); } } catch(e){} }
+  function loadLast(){
+    try {
+      const raw = localStorage.getItem(STORAGE.last);
+      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color: a.color||pickColor(0,1), cfg: a.cfg || { locked:false, excluded:false } })); }
+    } catch(e){}
+  }
 
   let confettiParticles = [];
   let confettiRaf = null;
@@ -978,39 +1248,92 @@
     if (winAutoHideTimer) clearTimeout(winAutoHideTimer);
     winAutoHideTimer = setTimeout(()=> hideWin(), 4200);
   }
-  function hideWin(){ winCard.classList.remove('show'); stopConfetti(); setTimeout(()=> { winOverlay.style.display = 'none'; winOverlay.setAttribute('aria-hidden','true'); }, 280); if (winAutoHideTimer) { clearTimeout(winAutoHideTimer); winAutoHideTimer = null; } }
+  function hideWin(){
+    winCard.classList.remove('show');
+    stopConfetti();
+    setTimeout(()=> { winOverlay.style.display = 'none'; winOverlay.setAttribute('aria-hidden','true'); }, 280);
+    if (winAutoHideTimer) { clearTimeout(winAutoHideTimer); winAutoHideTimer = null; }
+  }
   winClose.addEventListener('click', hideWin);
   dismissWinner.addEventListener('click', hideWin);
-  copyWinner.addEventListener('click', ()=> { const txt = winText.textContent || ''; navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> { copyWinner.textContent = 'Copied'; setTimeout(()=> copyWinner.textContent = 'Copy Winner', 1200); showToast('Winner copied to clipboard', 'success', 1400); }); });
+  copyWinner.addEventListener('click', ()=> {
+    const txt = winText.textContent || '';
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> {
+      copyWinner.textContent = 'Copied';
+      setTimeout(()=> copyWinner.textContent = 'Copy Winner', 1200);
+      showToast('Winner copied to clipboard', 'success', 1400);
+    });
+  });
 
+  // JSON Options toggle logic: position the panel directly under the savedSets dropdown
   let jsonPanelOpen = false;
   function showJsonPanel(){
+    // show it (hidden -> block) to measure, but keep it invisible while measuring
     jsonPanel.style.display = 'block';
     jsonPanel.style.visibility = 'hidden';
     jsonPanel.setAttribute('aria-hidden', 'false');
+
+    // measure panel
     const panelRect = jsonPanel.getBoundingClientRect();
     const panelW = panelRect.width || 360;
     const panelH = panelRect.height || 200;
+
+    // position under savedSets select
     const selRect = savedSets.getBoundingClientRect();
     let left = selRect.left + window.pageXOffset;
-    if (left + panelW > window.innerWidth - 12) { left = Math.max(8, window.innerWidth - panelW - 12); }
+    if (left + panelW > window.innerWidth - 12) {
+      left = Math.max(8, window.innerWidth - panelW - 12);
+    }
     if (left < 8) left = 8;
+
     let top = selRect.bottom + window.pageYOffset + 8;
-    if (top + panelH > window.innerHeight - 12) { top = selRect.top + window.pageYOffset - panelH - 8; if (top < 8) top = 8; }
+
+    // if not enough space below, place above the select
+    if (top + panelH > window.innerHeight - 12) {
+      top = selRect.top + window.pageYOffset - panelH - 8;
+      if (top < 8) top = 8;
+    }
+
     jsonPanel.style.left = `${left}px`;
     jsonPanel.style.top = `${top}px`;
+
+    // reveal
     jsonPanel.style.visibility = 'visible';
     jsonOptionsBtn.setAttribute('aria-expanded', 'true');
     jsonPanelOpen = true;
   }
-  function hideJsonPanel(){ jsonPanel.style.display = 'none'; jsonPanel.setAttribute('aria-hidden', 'true'); jsonOptionsBtn.setAttribute('aria-expanded', 'false'); jsonPanelOpen = false; }
-  jsonOptionsBtn.addEventListener('click', (ev) => { ev.stopPropagation(); if (jsonPanelOpen) hideJsonPanel(); else { loadSavedSets(); showJsonPanel(); } });
-  document.addEventListener('pointerdown', (ev) => { if (!jsonPanelOpen) return; if (!jsonPanel.contains(ev.target) && ev.target !== jsonOptionsBtn) hideJsonPanel(); });
+  function hideJsonPanel(){
+    jsonPanel.style.display = 'none';
+    jsonPanel.setAttribute('aria-hidden', 'true');
+    jsonOptionsBtn.setAttribute('aria-expanded', 'false');
+    jsonPanelOpen = false;
+  }
+  jsonOptionsBtn.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (jsonPanelOpen) hideJsonPanel(); else { loadSavedSets(); showJsonPanel(); }
+  });
+  // close json panel when clicking outside
+  document.addEventListener('pointerdown', (ev) => {
+    if (!jsonPanelOpen) return;
+    if (!jsonPanel.contains(ev.target) && ev.target !== jsonOptionsBtn) hideJsonPanel();
+  });
 
-  function init(){ try{ savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; } try{ history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]'); } catch(e){ history = []; } loadLast(); renderEntries(); renderHistory(); draw(); canvas.style.transform = `rotate(${rotationDeg}deg)`; resizeConfetti(); refreshSavedSelect(); }
+  function init(){
+    try{ savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
+    try{ history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]'); } catch(e){ history = []; }
+    loadLast();
+    renderEntries(); renderHistory(); draw();
+    canvas.style.transform = `rotate(${rotationDeg}deg)`;
+    resizeConfetti();
+    refreshSavedSelect();
+  }
   init();
 
-  window.cleanWheel = { getEntries: ()=> entries, setEntries: (arr)=> { entries = arr; renderEntries(); draw(); saveLast(); }, spin };
+  window.cleanWheel = {
+    getEntries: ()=> entries,
+    setEntries: (arr)=> { entries = arr; renderEntries(); draw(); saveLast(); },
+    spin
+  };
 })();
 </script>
 </body>
