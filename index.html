@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<!-- Provided font + Open Graph/Twitter meta -->
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+<meta property="og:title" content="@mackenzie_fordd" />
+<meta property="og:description" content="Kick streamer" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://i.imgur.com/BpOOGQ8.png" />
+<meta property="og:image:secure_url" content="https://i.imgur.com/BpOOGQ8.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="1200" />
+<link rel="image_src" href="https://i.imgur.com/BpOOGQ8.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="@mackenzie_fordd" />
+<meta name="twitter:description" content="Kick streamer" />
+<meta name="twitter:image" content="https://i.imgur.com/BpOOGQ8.png" />
+
+<title>Clean Wheel Spinner — Win Animation</title>
+
+<style>
+  :root{
+    --bg:#071122;
+    --panel:#0f1724;
+    --muted:#9fb4d9;
+    --accent1:#6c5ce7;
+    --accent2:#06b6d4;
+    --glass: rgba(255,255,255,0.03);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:
+      radial-gradient(800px 400px at 10% 10%, rgba(108,92,231,0.06), transparent 6%),
+      linear-gradient(180deg,#061322,var(--bg));
+    color:#e6eef8;
+    display:flex;align-items:flex-start;justify-content:center;padding:28px;
+  }
+
+  /* Layout */
+  .app {
+    width:1200px; max-width:calc(100% - 48px);
+    display:grid; grid-template-columns: 1fr 420px; gap:18px;
+    align-items:start; max-height: calc(100vh - 56px);
+  }
+
+  /* Left panel (wheel) */
+  .panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:var(--radius); padding:18px; box-shadow: 0 12px 40px rgba(2,8,23,0.6);
+    display:flex; flex-direction:column; min-height:560px;
+  }
+
+  .header { display:flex;align-items:center;justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .brand { display:flex;align-items:center;gap:12px; }
+  .logo {
+    width:54px;height:54px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:18px;font-family:'UnifrakturCook',serif;
+    box-shadow: 0 8px 24px rgba(6,182,212,0.12);
+  }
+  .title{ font-weight:800; font-size:18px; }
+  .subtitle{ font-size:13px; color:var(--muted); margin-top:2px; }
+
+  .wheel-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:8px 6px; flex:1; min-height:420px; }
+  .wheel-frame { width:640px; height:640px; position:relative; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:10px; }
+
+  canvas#wheel {
+    width:100%; height:100%; border-radius:50%;
+    box-shadow: 0 20px 60px rgba(2,8,23,0.6), inset 0 -10px 40px rgba(0,0,0,0.25);
+    will-change: transform; transform-origin:50% 50%;
+  }
+
+  /* top pointer */
+  .pointer { position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:40; display:flex;flex-direction:column;align-items:center;gap:4px; }
+  .pointer .tri { width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:26px solid var(--accent1); filter:drop-shadow(0 6px 18px rgba(108,92,231,0.18)); border-radius:4px; }
+  .pointer .cap { width:74px; height:16px; border-radius:8px; background:linear-gradient(90deg,var(--accent1),var(--accent2)); transform:translateX(-7px); }
+
+  .center-btn { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:30; width:140px;height:140px;border-radius:50%; display:flex;align-items:center;justify-content:center; cursor:pointer; background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)); border:2px solid rgba(255,255,255,0.04); box-shadow:0 10px 30px rgba(2,8,23,0.45); transition:transform .12s ease; }
+  .center-btn:active{ transform:translate(-50%,-50%) scale(.98); }
+  .center-btn .big{ font-weight:800; font-size:20px; letter-spacing:1px; }
+  .center-btn .small{ font-size:12px; opacity:0.85; margin-top:6px; font-weight:700; color:#e9f2ff; }
+
+  /* Right column */
+  .controls-right { display:flex; flex-direction:column; gap:12px; height:100%; min-height:560px; }
+  .side {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.006));
+    border-radius:var(--radius); padding:14px; box-shadow: 0 12px 30px rgba(2,6,23,0.6);
+    display:flex; flex-direction:column; gap:12px; height:100%; overflow:hidden;
+  }
+  .side h3{ margin:0; font-size:16px; font-weight:800; }
+
+  /* ENTRIES: restored scroll area with explicit max-height and custom scrollbar */
+  .entries-wrap { display:flex; flex-direction:column; gap:8px; flex: 1 1 auto; min-height:0; }
+  .entries {
+    padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    overflow:auto; max-height: 360px;
+  }
+  .entries::-webkit-scrollbar { width:12px; }
+  .entries::-webkit-scrollbar-track { background: transparent; margin:6px 0; border-radius:10px; }
+  .entries::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border-radius:10px; border: 3px solid rgba(0,0,0,0.18); background-clip: padding-box; }
+  .entries { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
+
+  .entry-row { display:grid; grid-template-columns: 1fr 72px 56px 36px; gap:8px; align-items:center; padding:8px; margin-bottom:8px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); }
+  .entry-row input[type="text"], .entry-row input[type="number"]{ background:transparent; border:0; color:inherit; outline:none; font-size:14px; }
+  .entry-row input[type="number"]{ text-align:center; }
+  .entry-row .entry-color { width:36px;height:32px;border-radius:8px;border:0; cursor:pointer; }
+
+  .controls-bottom { display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:8px; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .text-input { padding:10px; border-radius:10px; background:var(--glass); border:1px solid rgba(255,255,255,0.03); color:inherit; outline:none; }
+  .btn { padding:9px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:800; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; }
+  .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); font-weight:700; }
+
+  .small { font-size:13px; color:var(--muted); }
+
+  .meta { font-size:12px; text-align:center; color:#9fb4d9; margin-top:8px; }
+
+  /* WIN POPUP styles */
+  .win-overlay {
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999;
+    background: linear-gradient(180deg, rgba(2,6,23,0.45), rgba(2,6,23,0.55));
+    backdrop-filter: blur(6px);
+  }
+  .win-card {
+    width: min(720px, 92%); max-width:720px; border-radius:18px; padding:24px; text-align:center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+    box-shadow: 0 30px 100px rgba(2,6,23,0.8), inset 0 1px 0 rgba(255,255,255,0.02);
+    transform-origin:center;
+    opacity:0; transform: translateY(18px) scale(.96);
+    transition:opacity .28s cubic-bezier(.2,.9,.1,1), transform .36s cubic-bezier(.2,.9,.1,1);
+    position:relative;
+    overflow:hidden;
+  }
+  .win-card.show { opacity:1; transform: translateY(0) scale(1); }
+
+  .win-title { font-size:14px; color:var(--muted); margin-bottom:6px; }
+  .win-winner { font-size:34px; font-weight:900; letter-spacing:0.6px; margin-bottom:6px; color:white; text-shadow: 0 6px 30px rgba(108,92,231,0.25); }
+  .win-sub { font-size:14px; color:#cfe6ff; margin-bottom:14px; }
+
+  .win-actions { display:flex; gap:12px; justify-content:center; margin-top:12px; }
+  .win-actions .btn { padding:10px 16px; font-weight:800; border-radius:10px; }
+  .win-close { position:absolute; top:12px; right:12px; background:transparent; border:0; color:var(--muted); font-size:20px; cursor:pointer; }
+
+  /* confetti canvas inside overlay */
+  #confetti-canvas { position:absolute; inset:0; pointer-events:none; z-index:1000; }
+
+  @media (max-width:900px){
+    .win-winner { font-size:28px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Left: wheel -->
+  <div class="panel">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">W</div>
+        <div>
+          <div class="title">Clean Wheel — Spinner</div>
+          <div class="subtitle">Weighted wheel · Save sets · Smooth spins</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="exportBtn" class="btn ghost">Export</button>
+        <button id="importBtn" class="btn ghost">Import</button>
+      </div>
+    </div>
+
+    <div class="wheel-area">
+      <div class="wheel-frame">
+        <div class="pointer" aria-hidden="true">
+          <div class="tri"></div>
+          <div class="cap"></div>
+        </div>
+
+        <canvas id="wheel" width="1000" height="1000" aria-label="Prize wheel"></canvas>
+
+        <div class="center-btn" id="spinBtn" title="Spin (Space)">
+          <div style="text-align:center">
+            <div class="big" id="spinLabel">SPIN</div>
+            <div class="small" id="spinSub">Press Space</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px">
+      <div class="row small">
+        <label>Extra rotations</label>
+        <input id="rotations" type="number" value="6" min="0" step="1" style="width:80px;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit;margin-left:8px">
+      </div>
+      <div class="row small">
+        <label>Duration (s)</label>
+        <input id="duration" type="number" value="4.2" min="0.6" step="0.1" style="width:80px;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit;margin-left:8px">
+      </div>
+      <div class="row small">
+        <label>Easing</label>
+        <select id="easing" class="text-input" style="width:170px;">
+          <option value="cubic-bezier(.2,.9,.1,1)">Smooth</option>
+          <option value="cubic-bezier(.16,1,.3,1)">Snappy</option>
+          <option value="linear">Linear</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: controls -->
+  <div class="controls-right">
+    <div class="side">
+      <h3>Entries & settings</h3>
+
+      <div class="entries-wrap">
+        <!-- ENTRIES (scrollable) -->
+        <div class="entries" id="entriesList" aria-live="polite"></div>
+
+        <!-- add row -->
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <input id="newText" class="text-input" placeholder="Add entry (press Enter)" style="flex:1">
+          <input id="newWeight" type="number" value="1" min="0.01" step="0.01" style="width:86px;padding:8px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit">
+          <input id="newColor" type="color" value="#3b82f6" style="width:54px;height:44px;border-radius:8px;border:0">
+          <button id="addBtn" class="btn">Add</button>
+        </div>
+
+        <!-- controls bottom -->
+        <div class="controls-bottom" style="margin-top:10px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="setName" class="text-input" placeholder="Set name (save as)" style="min-width:160px">
+            <button id="saveSet" class="btn">Save</button>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="savedSets" class="text-input" style="min-width:160px"><option value="">Load saved set…</option></select>
+            <button id="loadSet" class="btn ghost">Load</button>
+            <button id="delSet" class="btn ghost">Del</button>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="normalizeBtn" class="btn ghost">Normalize to 100%</button>
+            <button id="clearBtn" class="btn ghost">Clear</button>
+            <button id="exportBtn2" class="btn ghost">Download JSON</button>
+            <button id="importBtn2" class="btn ghost">Import JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div style="margin-top:8px">
+        <div class="small" style="margin-bottom:6px">History</div>
+        <div id="historyList" class="entries" style="max-height:120px;padding:8px"></div>
+        <div style="display:flex;gap:8px;margin-top:8px"><button id="copyHistory" class="btn ghost">Copy</button><button id="clearHistory" class="btn ghost">Clear</button></div>
+      </div>
+
+    </div>
+
+    <div class="meta">Saved locally in your browser (localStorage). No data leaves your machine.</div>
+  </div>
+</div>
+
+<!-- WIN overlay + confetti canvas -->
+<div id="winOverlay" class="win-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="winTitle">
+  <canvas id="confetti-canvas"></canvas>
+  <div class="win-card" id="winCard" role="document" aria-live="polite">
+    <button class="win-close" id="winClose" aria-label="Close popup">✕</button>
+    <div class="win-title" id="winTitle">It's a winner!</div>
+    <div class="win-winner" id="winText">You won —</div>
+    <div class="win-sub" id="winSub">Congratulations! This will auto-hide shortly.</div>
+    <div class="win-actions">
+      <button id="copyWinner" class="btn ghost">Copy Winner</button>
+      <button id="dismissWinner" class="btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Spinner + Win popup + confetti
+   - Keeps cumulative rotationDeg so repeated spins stay fast
+   - On spin end, shows popup with winner, runs confetti for short burst
+   - Popup auto-hides after X seconds or can be dismissed manually
+*/
+
+(() => {
+  // DOM refs
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+
+  const entriesList = document.getElementById('entriesList');
+  const addBtn = document.getElementById('addBtn');
+  const newText = document.getElementById('newText');
+  const newWeight = document.getElementById('newWeight');
+  const newColor = document.getElementById('newColor');
+
+  const spinBtn = document.getElementById('spinBtn');
+  const spinLabel = document.getElementById('spinLabel');
+  const spinSub = document.getElementById('spinSub');
+
+  const rotationsInput = document.getElementById('rotations');
+  const durationInput = document.getElementById('duration');
+  const easingInput = document.getElementById('easing');
+
+  const setName = document.getElementById('setName');
+  const saveSet = document.getElementById('saveSet');
+  const savedSets = document.getElementById('savedSets');
+  const loadSet = document.getElementById('loadSet');
+  const delSet = document.getElementById('delSet');
+  const normalizeBtn = document.getElementById('normalizeBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const exportBtn2 = document.getElementById('exportBtn2');
+  const importBtn2 = document.getElementById('importBtn2');
+
+  const historyList = document.getElementById('historyList');
+  const copyHistory = document.getElementById('copyHistory');
+  const clearHistory = document.getElementById('clearHistory');
+
+  // win popup refs
+  const winOverlay = document.getElementById('winOverlay');
+  const winCard = document.getElementById('winCard');
+  const winText = document.getElementById('winText');
+  const winSub = document.getElementById('winSub');
+  const winClose = document.getElementById('winClose');
+  const dismissWinner = document.getElementById('dismissWinner');
+  const copyWinner = document.getElementById('copyWinner');
+
+  const confettiCanvas = document.getElementById('confetti-canvas');
+  const confettiCtx = confettiCanvas.getContext('2d');
+
+  const STORAGE = { sets: 'wheel_sets_v4', last: 'wheel_last_v4', history: 'wheel_history_v4' };
+
+  // default demo entries
+  let entries = [
+    { text: '$20 on any slot', weight: 1, color: '#2563eb' },
+    { text: '$100 on', weight: 1, color: '#ef4444' }
+  ];
+
+  let savedSetsObj = {};
+  let history = [];
+
+  // cumulative rotation degrees (keep growing)
+  let rotationDeg = 0;
+  let isSpinning = false;
+
+  // sizing helpers
+  function resizeAndScale(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    // confetti canvas match viewport size (overlay)
+    resizeConfetti();
+  }
+  window.addEventListener('resize', ()=>{ resizeAndScale(); draw(); });
+
+  // confetti sizing
+  function resizeConfetti(){
+    const rect = document.body.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    confettiCanvas.width = Math.round(rect.width * dpr);
+    confettiCanvas.height = Math.round(rect.height * dpr);
+    confettiCtx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  // initialize
+  resizeAndScale();
+
+  // utils
+  function sumWeights(list){ return list.reduce((s,e)=>s + Math.max(0,Number(e.weight)||0), 0); }
+  function pickColor(i, total){ const hue = Math.round(210 - (i/(Math.max(1,total)))*210); return `hsl(${hue} 88% 56%)`; }
+  function shadeHex(color, pct){
+    if (color && color.startsWith && color.startsWith('#')) {
+      let c = color.slice(1);
+      if (c.length === 3) c = c.split('').map(ch=>ch+ch).join('');
+      const num = parseInt(c,16);
+      let r = (num >> 16) + pct;
+      let g = ((num >> 8) & 0xff) + pct;
+      let b = (num & 0xff) + pct;
+      r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+      return `rgb(${r},${g},${b})`;
+    }
+    return color || '#888';
+  }
+
+  // drawing the wheel
+  function draw(highlightIndex = null){
+    resizeAndScale();
+    const W = canvas.width / (window.devicePixelRatio || 1);
+    const H = canvas.height / (window.devicePixelRatio || 1);
+    const cx = W/2, cy = H/2, radius = Math.min(W,H)/2 - 6;
+
+    ctx.clearRect(0,0,W,H);
+
+    // vignette
+    const g = ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.4, radius*0.1, cx,cy, radius*1.2);
+    g.addColorStop(0,'rgba(255,255,255,0.02)');
+    g.addColorStop(1,'rgba(0,0,0,0.08)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+    const total = sumWeights(entries) || 1;
+    let start = -Math.PI/2;
+
+    entries.forEach((entry,i)=>{
+      const angle = (entry.weight/total) * Math.PI * 2;
+      const end = start + angle;
+
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,radius,start,end,false);
+      ctx.closePath();
+
+      const midAngle = (start + end) / 2;
+      const colorA = entry.color || pickColor(i, entries.length);
+      const grad = ctx.createLinearGradient(cx,cy, cx + Math.cos(midAngle)*radius, cy + Math.sin(midAngle)*radius);
+      grad.addColorStop(0, colorA);
+      grad.addColorStop(1, shadeHex(colorA, -14));
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      if (highlightIndex === i){
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,radius+8,start,end,false);
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+        ctx.lineWidth = 6;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // text
+      ctx.save();
+      const labelRadius = radius * 0.62;
+      ctx.translate(cx + Math.cos(midAngle)*labelRadius, cy + Math.sin(midAngle)*labelRadius);
+      ctx.rotate(midAngle + Math.PI/2);
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.font = '600 18px Inter, system-ui, Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      wrapText(ctx, entry.text, 0, 0, radius * 0.56, 20);
+      ctx.restore();
+
+      start = end;
+    });
+
+    // center
+    ctx.beginPath();
+    ctx.arc(cx,cy, radius*0.18, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.035)';
+    ctx.fill();
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = (''+text).split(' ');
+    let line = '', lines = [];
+    for (let n=0; n<words.length; n++){
+      const test = line + words[n] + ' ';
+      if (ctx.measureText(test).width > maxWidth && n>0){ lines.push(line.trim()); line = words[n] + ' '; } else { line = test; }
+    }
+    lines.push(line.trim());
+    const startY = y - (lines.length-1) * (lineHeight/2);
+    lines.forEach((ln,i)=> ctx.fillText(ln, x, startY + i*lineHeight));
+  }
+
+  // render entries list
+  function renderEntries(){
+    entriesList.innerHTML = '';
+    if (entries.length === 0) {
+      entriesList.innerHTML = '<div style="padding:12px;color:var(--muted);">No entries yet — add some!</div>';
+      return;
+    }
+    entries.forEach((e,i)=>{
+      const el = document.createElement('div');
+      el.className = 'entry-row';
+      el.innerHTML = `
+        <input type="text" data-i="${i}" class="entry-text" value="${escapeHtml(e.text)}" />
+        <input type="number" data-i="${i}" class="entry-weight" value="${Number(e.weight)}" step="0.01" />
+        <input type="color" data-i="${i}" class="entry-color" value="${e.color || pickColor(i, entries.length)}" />
+        <button class="entry-remove" data-i="${i}" title="Remove">✕</button>
+      `;
+      entriesList.appendChild(el);
+    });
+
+    // attach listeners
+    entriesList.querySelectorAll('.entry-text').forEach(inp=>{
+      inp.addEventListener('change', ()=> { const i = +inp.dataset.i; entries[i].text = inp.value.trim() || '(empty)'; saveLast(); draw(); });
+    });
+    entriesList.querySelectorAll('.entry-weight').forEach(inp=>{
+      inp.addEventListener('change', ()=> { const i = +inp.dataset.i; const v = parseFloat(inp.value); entries[i].weight = Math.max(0.0001, isFinite(v) ? v : 1); saveLast(); draw(); });
+    });
+    entriesList.querySelectorAll('.entry-color').forEach(inp=>{
+      inp.addEventListener('change', ()=> { const i = +inp.dataset.i; entries[i].color = inp.value; saveLast(); draw(); });
+    });
+    entriesList.querySelectorAll('.entry-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=> { const i = +btn.dataset.i; entries.splice(i,1); saveLast(); renderEntries(); draw(); });
+    });
+  }
+
+  function escapeHtml(s){ return (''+s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // add entry
+  addBtn.addEventListener('click', addNew);
+  newText.addEventListener('keydown', (e)=> { if (e.key === 'Enter') addNew(); });
+  function addNew(){
+    const text = newText.value.trim(); if (!text) return;
+    entries.push({ text, weight: Math.max(0.0001,Number(newWeight.value)||1), color: newColor.value });
+    newText.value=''; newWeight.value='1'; newColor.value='#3b82f6'; renderEntries(); draw(); saveLast();
+    entriesList.scrollTop = entriesList.scrollHeight;
+  }
+
+  // weighted pick
+  function pickTarget(){
+    const total = sumWeights(entries);
+    if (!entries.length) return { index:0, angleDeg:-90 };
+    const r = Math.random() * total;
+    let acc = 0, chosen = entries.length - 1;
+    for (let i=0;i<entries.length;i++){
+      acc += entries[i].weight;
+      if (r <= acc) { chosen = i; break; }
+    }
+    let start = -Math.PI/2;
+    for (let i=0;i<chosen;i++){
+      start += (entries[i].weight/total) * (Math.PI*2);
+    }
+    const sliceAngle = (entries[chosen].weight/total) * (Math.PI*2);
+    const offset = Math.random() * sliceAngle;
+    const targetRad = start + offset;
+    const targetDeg = targetRad * 180 / Math.PI;
+    return { index: chosen, angleDeg: targetDeg };
+  }
+
+  function norm360(d){ return ((d % 360) + 360) % 360; }
+
+  // spin logic (cumulative rotation kept)
+  function spin(){
+    if (isSpinning || entries.length === 0) return;
+    isSpinning = true;
+    spinBtn.style.pointerEvents = 'none';
+    spinLabel.textContent = 'SPINNING...';
+    spinSub.textContent = '';
+
+    const { index, angleDeg } = pickTarget();
+    const extraRot = Math.max(0, Number(rotationsInput.value) || 6);
+    const duration = Math.max(0.6, Number(durationInput.value) || 4.2);
+    const easing = easingInput.value || 'cubic-bezier(.2,.9,.1,1)';
+
+    // align chosen slice to -90deg (top).
+    const alignDeg = -90 - angleDeg;
+    const alignNorm = norm360(alignDeg);
+    const currentMod = norm360(rotationDeg);
+    const delta = (alignNorm - currentMod + 360) % 360;
+    const jitter = (Math.random() - 0.5) * 6;
+    const finalRotation = rotationDeg + (extraRot * 360) + delta + jitter;
+
+    // animate
+    canvas.style.transition = `transform ${duration}s ${easing}`;
+    requestAnimationFrame(()=> { canvas.style.transform = `rotate(${finalRotation}deg)`; });
+
+    // handle end
+    canvas.addEventListener('transitionend', function onEnd(){
+      canvas.style.transition = '';
+      rotationDeg = finalRotation;
+      isSpinning = false;
+      spinBtn.style.pointerEvents = 'auto';
+      spinLabel.textContent = 'SPIN';
+      spinSub.textContent = `Winner: ${entries[index].text}`;
+      draw(index);
+
+      // show win popup & confetti
+      showWin(entries[index], index);
+
+      history.unshift({ text: entries[index].text, when: new Date().toLocaleString(), set: setName.value || 'current' });
+      saveHistory();
+      setTimeout(()=> draw(null), 1400);
+      canvas.removeEventListener('transitionend', onEnd);
+    }, { once: true });
+  }
+
+  spinBtn.addEventListener('click', spin);
+  window.addEventListener('keydown', (e)=> {
+    if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault(); spin();
+    }
+  });
+
+  // Save/load sets functions (same as before)
+  function loadSavedSets(){
+    try { savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
+    refreshSavedSelect();
+  }
+  function refreshSavedSelect(){
+    savedSets.innerHTML = '<option value="">Load saved set…</option>';
+    Object.keys(savedSetsObj).forEach(name=>{
+      const opt = document.createElement('option'); opt.value = name; opt.textContent = name; savedSets.appendChild(opt);
+    });
+  }
+
+  saveSet.addEventListener('click', ()=>{
+    const name = (setName.value || '').trim(); if (!name) return alert('Provide a name for the set.');
+    savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color }));
+    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
+    refreshSavedSelect(); alert('Set saved locally.');
+  });
+
+  loadSet.addEventListener('click', ()=>{
+    const name = savedSets.value; if (!name) return alert('Choose a saved set to load.');
+    entries = (savedSetsObj[name] || []).map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color }));
+    setName.value = name; renderEntries(); draw(); saveLast();
+  });
+
+  delSet.addEventListener('click', ()=>{
+    const name = savedSets.value; if (!name) return alert('Choose a saved set.');
+    if (!confirm(`Delete set "${name}"?`)) return;
+    delete savedSetsObj[name];
+    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
+    refreshSavedSelect(); alert('Deleted.');
+  });
+
+  // Normalize / Clear
+  normalizeBtn.addEventListener('click', ()=>{
+    const total = sumWeights(entries) || 1;
+    entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(2)) }));
+    renderEntries(); draw(); saveLast();
+  });
+
+  clearBtn.addEventListener('click', ()=> {
+    if (!confirm('Clear all entries?')) return;
+    entries = []; renderEntries(); draw(); saveLast();
+  });
+
+  // Export/import
+  function downloadJSON(obj, filename){
+    const b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(b);
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+  exportBtn.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
+  exportBtn2.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
+  function importJSON(){
+    const f = document.createElement('input'); f.type='file'; f.accept='application/json';
+    f.onchange = (ev)=>{
+      const file = ev.target.files[0]; if (!file) return;
+      const r = new FileReader();
+      r.onload = (e)=> {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data.entries)) {
+            entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1) }));
+            if (data.meta && data.meta.savedSetsObj) { savedSetsObj = {...savedSetsObj, ...data.meta.savedSetsObj}; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); }
+            renderEntries(); draw(); refreshSavedSelect(); saveLast(); alert('Imported.');
+          } else { alert('Invalid file format.'); }
+        } catch(err){ alert('Could not parse JSON.'); }
+      };
+      r.readAsText(file);
+    };
+    f.click();
+  }
+  importBtn.addEventListener('click', importJSON);
+  importBtn2.addEventListener('click', importJSON);
+
+  // History
+  function saveHistory(){ localStorage.setItem(STORAGE.history, JSON.stringify(history)); renderHistory(); }
+  function renderHistory(){
+    historyList.innerHTML = '';
+    if (!history.length) { historyList.innerHTML = '<div style="color:var(--muted);padding:8px">No spins yet.</div>'; return; }
+    history.forEach(h=> {
+      const d = document.createElement('div'); d.style.padding='6px'; d.style.marginBottom='6px'; d.style.borderRadius='6px'; d.style.background='rgba(255,255,255,0.012)';
+      d.textContent = `${h.when} — ${h.text} (${h.set})`;
+      historyList.appendChild(d);
+    });
+  }
+  copyHistory.addEventListener('click', ()=> {
+    const txt = history.map(h=>`${h.when} — ${h.text} (${h.set})`).join('\n');
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> alert('History copied.'));
+  });
+  clearHistory.addEventListener('click', ()=> { if(confirm('Clear history?')){ history=[]; saveHistory(); } });
+
+  // Save last
+  function saveLast(){ localStorage.setItem(STORAGE.last, JSON.stringify(entries)); }
+  function loadLast(){
+    try {
+      const raw = localStorage.getItem(STORAGE.last);
+      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color||pickColor(0,1) })); }
+    } catch(e){}
+  }
+
+  // helpers
+  function pickColor(i,t){ const hue = Math.round(210 - (i/(Math.max(1,t)))*210); return `hsl(${hue} 88% 56%)`; }
+  function sumWeights(arr){ return arr.reduce((s,e)=> s + Math.max(0,Number(e.weight)||0), 0); }
+
+  // --- WIN popup + confetti implementation ---
+  let confettiParticles = [];
+  let confettiRunning = false;
+  let confettiRaf = null;
+  function startConfetti(colors, duration = 2200){
+    // colors: array of color strings for particles
+    resizeConfetti();
+    const w = confettiCanvas.width / (window.devicePixelRatio || 1);
+    const h = confettiCanvas.height / (window.devicePixelRatio || 1);
+    confettiParticles = [];
+    for (let i=0;i<120;i++){
+      confettiParticles.push({
+        x: Math.random()*w,
+        y: Math.random()*-h*0.2,
+        vx: (Math.random()-0.5) * 7,
+        vy: 2 + Math.random()*6,
+        size: 6 + Math.random()*8,
+        rot: Math.random()*360,
+        vr: (Math.random()-0.5)*10,
+        color: colors[Math.floor(Math.random()*colors.length)] || `hsl(${Math.random()*360} 80% 60%)`,
+        life: 0,
+        ttl: 80 + Math.random()*60
+      });
+    }
+    confettiRunning = true;
+    const start = performance.now();
+    function step(now){
+      const t = now - start;
+      confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+      const w = confettiCanvas.width / (window.devicePixelRatio || 1);
+      const h = confettiCanvas.height / (window.devicePixelRatio || 1);
+      confettiParticles.forEach(p=>{
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.vy += 0.14; // gravity
+        p.life++;
+        // draw rectangle particle
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.rot * Math.PI/180);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+        confettiCtx.restore();
+      });
+
+      // stop after duration
+      if (t < duration) {
+        confettiRaf = requestAnimationFrame(step);
+      } else {
+        // fade out: continue drawing until particles fall off screen a bit
+        confettiRaf = requestAnimationFrame(() => {
+          // quick fade and clear
+          confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+          confettiRunning = false;
+        });
+      }
+    }
+    confettiRaf = requestAnimationFrame(step);
+  }
+
+  function stopConfetti(){
+    if (confettiRaf) cancelAnimationFrame(confettiRaf);
+    confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+    confettiRunning = false;
+    confettiParticles = [];
+  }
+
+  let winAutoHideTimer = null;
+  function showWin(entry, index){
+    // set text
+    winText.textContent = entry.text;
+    winSub.textContent = `Selected — ${new Date().toLocaleTimeString()}`;
+
+    // show overlay & animate
+    winOverlay.style.display = 'flex';
+    winOverlay.setAttribute('aria-hidden','false');
+    // small delay to allow display->transition
+    requestAnimationFrame(()=> {
+      winCard.classList.add('show');
+    });
+
+    // start confetti using slice color + accent palette
+    const palette = [entry.color || '#ffd166', '#ffffff', '#ff9de2', '#6c5ce7', '#06b6d4'];
+    startConfetti(palette, 2400);
+
+    // auto-hide after 4.2s
+    if (winAutoHideTimer) clearTimeout(winAutoHideTimer);
+    winAutoHideTimer = setTimeout(()=> { hideWin(); }, 4200);
+  }
+
+  function hideWin(){
+    if (!winOverlay) return;
+    winCard.classList.remove('show');
+    // stop confetti
+    stopConfetti();
+    // hide overlay after transition
+    setTimeout(()=> {
+      winOverlay.style.display = 'none';
+      winOverlay.setAttribute('aria-hidden','true');
+    }, 280);
+    if (winAutoHideTimer) { clearTimeout(winAutoHideTimer); winAutoHideTimer = null; }
+  }
+
+  // connect popup controls
+  winClose.addEventListener('click', hideWin);
+  dismissWinner.addEventListener('click', hideWin);
+  copyWinner.addEventListener('click', ()=>{
+    const txt = winText.textContent || '';
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> {
+      copyWinner.textContent = 'Copied';
+      setTimeout(()=> copyWinner.textContent = 'Copy Winner', 1200);
+    });
+  });
+
+  // Save/load sets helpers, history, export/import (same as before)
+  function loadSavedSets(){
+    try { savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
+    refreshSavedSelect();
+  }
+  function refreshSavedSelect(){
+    savedSets.innerHTML = '<option value="">Load saved set…</option>';
+    Object.keys(savedSetsObj).forEach(name=>{
+      const opt = document.createElement('option'); opt.value = name; opt.textContent = name; savedSets.appendChild(opt);
+    });
+  }
+
+  saveSet.addEventListener('click', ()=>{
+    const name = (setName.value || '').trim(); if (!name) return alert('Provide a name for the set.');
+    savedSetsObj[name] = entries.map(e=>({ text:e.text, weight:e.weight, color:e.color }));
+    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
+    refreshSavedSelect(); alert('Set saved locally.');
+  });
+
+  loadSet.addEventListener('click', ()=>{
+    const name = savedSets.value; if (!name) return alert('Choose a saved set to load.');
+    entries = (savedSetsObj[name] || []).map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color }));
+    setName.value = name; renderEntries(); draw(); saveLast();
+  });
+
+  delSet.addEventListener('click', ()=>{
+    const name = savedSets.value; if (!name) return alert('Choose a saved set.');
+    if (!confirm(`Delete set "${name}"?`)) return;
+    delete savedSetsObj[name];
+    localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj));
+    refreshSavedSelect(); alert('Deleted.');
+  });
+
+  normalizeBtn.addEventListener('click', ()=>{
+    const total = sumWeights(entries) || 1;
+    entries = entries.map(e => ({ text: e.text, color: e.color, weight: Number(((e.weight/total)*100).toFixed(2)) }));
+    renderEntries(); draw(); saveLast();
+  });
+
+  clearBtn.addEventListener('click', ()=> {
+    if (!confirm('Clear all entries?')) return;
+    entries = []; renderEntries(); draw(); saveLast();
+  });
+
+  // Export/import JSON
+  function downloadJSON(obj, filename){
+    const b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(b);
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+  exportBtn.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
+  exportBtn2.addEventListener('click', ()=> downloadJSON({ entries, meta: { savedSetsObj } }, 'wheel-export.json') );
+  importBtn.addEventListener('click', importJSON);
+  importBtn2.addEventListener('click', importJSON);
+  function importJSON(){
+    const f = document.createElement('input'); f.type='file'; f.accept='application/json';
+    f.onchange = (ev)=>{
+      const file = ev.target.files[0]; if (!file) return;
+      const r = new FileReader();
+      r.onload = (e)=> {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data.entries)) {
+            entries = data.entries.map(x=>({ text:x.text, weight:Number(x.weight)||1, color:x.color||pickColor(0,1) }));
+            if (data.meta && data.meta.savedSetsObj) { savedSetsObj = {...savedSetsObj, ...data.meta.savedSetsObj}; localStorage.setItem(STORAGE.sets, JSON.stringify(savedSetsObj)); }
+            renderEntries(); draw(); refreshSavedSelect(); saveLast(); alert('Imported.');
+          } else { alert('Invalid file format.'); }
+        } catch(err){ alert('Could not parse JSON.'); }
+      };
+      r.readAsText(file);
+    };
+    f.click();
+  }
+
+  // History functions
+  function saveHistory(){ localStorage.setItem(STORAGE.history, JSON.stringify(history)); renderHistory(); }
+  function renderHistory(){
+    historyList.innerHTML = '';
+    if (!history.length) { historyList.innerHTML = '<div style="color:var(--muted);padding:8px">No spins yet.</div>'; return; }
+    history.forEach(h=> {
+      const d = document.createElement('div'); d.style.padding='6px'; d.style.marginBottom='6px'; d.style.borderRadius='6px'; d.style.background='rgba(255,255,255,0.012)';
+      d.textContent = `${h.when} — ${h.text} (${h.set})`;
+      historyList.appendChild(d);
+    });
+  }
+  copyHistory.addEventListener('click', ()=> {
+    const txt = history.map(h=>`${h.when} — ${h.text} (${h.set})`).join('\n');
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(()=> alert('History copied.'));
+  });
+  clearHistory.addEventListener('click', ()=> { if(confirm('Clear history?')){ history=[]; saveHistory(); } });
+
+  // Save last functions
+  function saveLast(){ localStorage.setItem(STORAGE.last, JSON.stringify(entries)); }
+  function loadLast(){
+    try {
+      const raw = localStorage.getItem(STORAGE.last);
+      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) entries = arr.map(a=>({ text:a.text, weight:Number(a.weight)||1, color:a.color||pickColor(0,1) })); }
+    } catch(e){}
+  }
+
+  // init
+  function init(){
+    try{ savedSetsObj = JSON.parse(localStorage.getItem(STORAGE.sets) || '{}'); } catch(e){ savedSetsObj = {}; }
+    try{ history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]'); } catch(e){ history = []; }
+    loadLast();
+    renderEntries(); renderHistory(); draw();
+    canvas.style.transform = `rotate(${rotationDeg}deg)`;
+    resizeConfetti();
+  }
+  init();
+
+  // Small debug API
+  window.cleanWheel = {
+    getEntries: ()=> entries,
+    setEntries: (arr)=> { entries = arr; renderEntries(); draw(); saveLast(); },
+    spin
+  };
+
+  // Recompute sizes when overlay shown (helpful mobile)
+  const observer = new ResizeObserver(()=>{ resizeConfetti(); });
+  observer.observe(document.body);
+
+})();
+</script>
+</body>
+</html>
